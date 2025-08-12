@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "lib/trmnl_liquid/version"
+require_relative "lib/trmnl/liquid/version"
 
 Gem::Specification.new do |spec|
   spec.name = "trmnl_liquid"
-  spec.version = TrmnlLiquid::VERSION
+  spec.version = TRMNL::Liquid::VERSION
   spec.authors = ["Rockwell Schrock"]
   spec.email = ["rockwell@schrock.me"]
 
@@ -33,8 +33,10 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  # Uncomment to register a new dependency of your gem
-  # spec.add_dependency "example-gem", "~> 1.0"
+  spec.add_dependency 'actionview', '~> 8.0.2'
+  spec.add_dependency 'i18n', '~> 1.14.7'
+  spec.add_dependency 'redcarpet', '~> 3.6'
+  spec.add_dependency 'trmnl-i18n' # see Gemfile for GitHub dependency
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

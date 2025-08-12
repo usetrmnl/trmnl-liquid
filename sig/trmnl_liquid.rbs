@@ -1,4 +1,6 @@
-module TrmnlLiquid
-  VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+module TRMNL
+  module Liquid
+    VERSION: String
+    # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+  end
 end

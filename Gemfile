@@ -7,3 +7,4 @@ gemspec
 
 gem "irb"
 gem "rake", "~> 13.0"
+gem 'trmnl-i18n', github: 'usetrmnl/trmnl-i18n', branch: 'main'
