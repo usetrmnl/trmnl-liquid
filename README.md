@@ -20,7 +20,16 @@ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+require 'trmnl_liquid'
+
+# register filters and tags with Liquid::Template
+TRMNL::Liquid.register_all
+
+markup = "Hello {{ count | number_with_delimiter }} people!"
+template = TRMNL::Liquid::Template.parse(markup)
+rendered = template.render(count: 1337)
+```
 
 ## Development
 
