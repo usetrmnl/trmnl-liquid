@@ -9,7 +9,7 @@ GIT
 PATH
   remote: .
   specs:
-    trmnl_liquid (0.1.0)
+    trmnl-liquid (0.1.0)
       actionview (~> 8.0)
       liquid (~> 5.5)
       redcarpet (~> 3.6)
@@ -166,7 +166,7 @@ DEPENDENCIES
   rake (~> 13.0)
   rspec
   trmnl-i18n!
-  trmnl_liquid!
+  trmnl-liquid!
 
 BUNDLED WITH
    2.6.5

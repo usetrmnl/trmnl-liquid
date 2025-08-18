@@ -3,7 +3,7 @@
 require_relative "lib/trmnl/liquid/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "trmnl_liquid"
+  spec.name = "trmnl-liquid"
   spec.version = TRMNL::Liquid::VERSION
   spec.authors = ["Rockwell Schrock"]
   spec.email = ["rockwell@schrock.me"]

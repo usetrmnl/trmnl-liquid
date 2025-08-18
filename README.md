@@ -19,7 +19,7 @@ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
 ## Usage
 
 ```ruby
-require 'trmnl_liquid'
+require 'trmnl-liquid'
 
 # register filters and tags with Liquid::Template
 TRMNL::Liquid.register_all
@@ -50,7 +50,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/usetrmnl/trmnl_liquid.
+Bug reports and pull requests are welcome on GitHub at https://github.com/usetrmnl/trmnl-liquid.
 
 ## License
 
