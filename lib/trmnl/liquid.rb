@@ -15,7 +15,7 @@ if defined?(::TRMNL::I18n)
 end
 
 if Gem.loaded_specs['rails-i18n']
-  ::I18n.load_path += Dir[File.join(Gem.loaded_specs['rails-i18n'].full_gem_path, 'rails', 'locale', '*.yml')]
+  ::I18n.load_path += Pathname.new(Gem.loaded_specs['rails-i18n'].full_gem_path).join('rails', 'locale').glob('*.yml')
 end
 
 module TRMNL
