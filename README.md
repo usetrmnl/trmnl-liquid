@@ -7,16 +7,32 @@ A set of Liquid filters and tags used to render custom plugins for [TRMNL](https
 Install the gem and add to the application's Gemfile by executing:
 
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle add trmnl-liquid
 ```
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install trmnl-liquid
 ```
 
 ## Usage
+
+This gem registers global filters and tags for use in Liquid templates.
+
+See [lib/trmnl/liquid/filters.rb](lib/trmnl/liquid/filters.rb) for the currently-supported filters.
+
+Additionally, the `{% template %}` tag defines reusable chunks of markup:
+
+```liquid
+{% template say_hello %}
+<h1>Why hello there, {{ name }}!</h1>
+{% endtemplate %}
+
+{% render "say_hello", name: "General Kenobi" %}
+```
+
+Instead of `Liquid::Template`, simply use the `TRMNL::Liquid::Template` class for this enhanced functionality:
 
 ```ruby
 require 'trmnl-liquid'
@@ -27,11 +43,11 @@ rendered = template.render(count: 1337)
 # => "Hello 1,337 people!"
 ```
 
-## Internationalization (Optional Peer Dependencies)
+## Internationalization (Optional)
 
 Some filter functions (e.g. `number_to_currency`, `l_word`, and `l_date`) require translations provided by the [rails-i18n](https://rubygems.org/gems/rails-i18n) and [trmnl-i18n](https://rubygems.org/gems/trmnl-i18n) gems.
 
-These dependencies are optional, and if missing will fall back to default behavior.
+These dependencies are optional, and if missing will fall back to default behavior. If you want to internationalize, also include these gems:
 
 ```ruby
 # optional peer dependencies
