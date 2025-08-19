@@ -11,7 +11,7 @@ The environment concept was introduced in [v5.6.0](https://github.com/Shopify/li
 See [lib/trmnl/liquid/filters.rb](lib/trmnl/liquid/filters.rb) for the currently-supported filters.
 
 ```ruby
-require 'trmnl-liquid'
+require 'trmnl/liquid'
 
 markup = "Hello {{ count | number_with_delimiter }} people!"
 environment = TRMNL::Liquid.build_environment # same arguments as Liquid::Environment.build
