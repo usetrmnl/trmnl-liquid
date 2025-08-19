@@ -1,6 +1,35 @@
-# TRMNL::Liquid
+# TRMNL-Flavored Liquid Templates
 
 A set of Liquid filters and tags used to render custom plugins for [TRMNL](https://usetrmnl.com).
+
+## Usage
+
+Functionality is achieved by parsing a template with the option `{ environment: TRMNL::Liquid.build_environment }`.
+
+The environment concept was introduced in [v5.6.0](https://github.com/Shopify/liquid/releases/tag/v5.6.0) of the  `liquid` gem as a safer alternative to global registration of tags, filters, and so on.
+
+See [lib/trmnl/liquid/filters.rb](lib/trmnl/liquid/filters.rb) for the currently-supported filters.
+
+```ruby
+require 'trmnl-liquid'
+
+markup = "Hello {{ count | number_with_delimiter }} people!"
+environment = TRMNL::Liquid.build_environment # same arguments as Liquid::Environment.build
+template = Liquid::Template.parse(markup, environment: environment)
+rendered = template.render(count: 1337)
+# => "Hello 1,337 people!"
+```
+
+
+Additionally, the `{% template %}` tag defines reusable chunks of markup:
+
+```liquid
+{% template say_hello %}
+<h1>Why hello there, {{ name }}!</h1>
+{% endtemplate %}
+
+{% render "say_hello", name: "General Kenobi" %}
+```
 
 ## Installation
 
@@ -16,34 +45,7 @@ If bundler is not being used to manage dependencies, install the gem by executin
 gem install trmnl-liquid
 ```
 
-## Usage
-
-This gem registers global filters and tags for use in Liquid templates.
-
-See [lib/trmnl/liquid/filters.rb](lib/trmnl/liquid/filters.rb) for the currently-supported filters.
-
-Additionally, the `{% template %}` tag defines reusable chunks of markup:
-
-```liquid
-{% template say_hello %}
-<h1>Why hello there, {{ name }}!</h1>
-{% endtemplate %}
-
-{% render "say_hello", name: "General Kenobi" %}
-```
-
-Instead of `Liquid::Template`, simply use the `TRMNL::Liquid::Template` class for this enhanced functionality:
-
-```ruby
-require 'trmnl-liquid'
-
-markup = "Hello {{ count | number_with_delimiter }} people!"
-template = TRMNL::Liquid::Template.parse(markup)
-rendered = template.render(count: 1337)
-# => "Hello 1,337 people!"
-```
-
-## Internationalization (Optional)
+### Internationalization (Optional)
 
 Some filter functions (e.g. `number_to_currency`, `l_word`, and `l_date`) require translations provided by the [rails-i18n](https://rubygems.org/gems/rails-i18n) and [trmnl-i18n](https://rubygems.org/gems/trmnl-i18n) gems.
 

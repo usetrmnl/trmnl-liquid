@@ -2,9 +2,10 @@ require 'trmnl/liquid'
 
 describe TRMNL::Liquid::Filters do
   let(:service) { Liquid::Template }
+  let(:environment) { TRMNL::Liquid.build_environment }
 
   def expect_render(input, output, vars = {})
-    expect(service.parse(input).render(vars)).to eq(output)
+    expect(service.parse(input, environment: environment).render(vars)).to eq(output)
   end
 
   it 'supports append_random' do
@@ -19,7 +20,8 @@ describe TRMNL::Liquid::Filters do
 
   it 'supports find_by' do
     collection = [{ "name" => "Ryan", "age" => 35 }, { "name" => "Sara", "age" => 29 }, { "name" => "Jimbob", "age" => 29 }]
-    expect_render("{{ collection | find_by: 'name', 'Ryan' }}", collection.find { |obj| obj['name'] == 'Ryan' }.to_s, { "collection" => collection })
+    expected = '{"name"=>"Ryan", "age"=>35}'
+    expect_render("{{ collection | find_by: 'name', 'Ryan' }}", expected, { "collection" => collection })
 
     # with optional fallback parameter
     expect_render("{{ collection | find_by: 'name', 'ronak', 'Not Found' }}", 'Not Found', { "collection" => collection })
@@ -27,7 +29,8 @@ describe TRMNL::Liquid::Filters do
 
   it 'supports group_by' do
     collection = [{ "name" => "Ryan", "age" => 35 }, { "name" => "Sara", "age" => 29 }, { "name" => "Jimbob", "age" => 29 }]
-    expect_render("{{ collection | group_by: 'age' }}", collection.group_by { |obj| obj['age'] }.to_s, { "collection" => collection })
+    expected = "{35=>[{\"name\"=>\"Ryan\", \"age\"=>35}], 29=>[{\"name\"=>\"Sara\", \"age\"=>29}, {\"name\"=>\"Jimbob\", \"age\"=>29}]}"
+    expect_render("{{ collection | group_by: 'age' }}", expected, { "collection" => collection })
   end
 
   it 'supports markdown_to_html' do

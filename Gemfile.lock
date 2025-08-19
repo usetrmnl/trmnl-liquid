@@ -11,7 +11,7 @@ PATH
   specs:
     trmnl-liquid (0.1.0)
       actionview (~> 8.0)
-      liquid (~> 5.5)
+      liquid (~> 5.6)
       redcarpet (~> 3.6)
 
 GEM
@@ -65,7 +65,9 @@ GEM
       pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
-    liquid (5.5.1)
+    liquid (5.8.7)
+      bigdecimal
+      strscan (>= 3.1.1)
     logger (1.7.0)
     loofah (2.24.1)
       crass (~> 1.0.2)
@@ -142,6 +144,7 @@ GEM
     rspec-support (3.13.4)
     securerandom (0.4.1)
     stringio (3.1.7)
+    strscan (3.1.5)
     thor (1.4.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)

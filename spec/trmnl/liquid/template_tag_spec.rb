@@ -1,7 +1,8 @@
 require 'trmnl/liquid'
 
-describe TRMNL::Liquid::Template do
-  let(:service) { TRMNL::Liquid::Template }
+describe TRMNL::Liquid::TemplateTag do
+  let(:service) { ::Liquid::Template }
+  let(:environment) { TRMNL::Liquid.build_environment }
   let(:vars) { {} }
 
   context 'with an invalid template name' do
@@ -44,6 +45,6 @@ describe TRMNL::Liquid::Template do
   end
 
   def expect_render(output)
-    expect(service.parse(content).render(vars).strip).to eq(output.strip)
+    expect(service.parse(content, environment: environment).render(vars).strip).to eq(output.strip)
   end
 end

@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
+require 'liquid'
+
 require 'trmnl/liquid/filters'
-require 'trmnl/liquid/template'
+require 'trmnl/liquid/file_system'
+require 'trmnl/liquid/template_tag'
 require 'trmnl/liquid/version'
 
 begin
@@ -20,9 +23,13 @@ end
 
 module TRMNL
   module Liquid
-    # empty
+    def self.build_environment(*args)
+      ::Liquid::Environment.build(*args) do |env|
+        env.register_filter(TRMNL::Liquid::Filters)
+        env.register_tag('template', TRMNL::Liquid::TemplateTag)
+        env.file_system = TRMNL::Liquid::FileSystem.new
+        yield(env) if block_given?
+      end
+    end
   end
 end
-
-::Liquid::Template.register_filter(TRMNL::Liquid::Filters)
-::Liquid::Template.register_tag('template', TRMNL::Liquid::Template::TemplateTag)

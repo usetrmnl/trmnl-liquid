@@ -28,6 +28,6 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "actionview", "~> 8.0"
-  spec.add_dependency "liquid", "~> 5.5"
+  spec.add_dependency "liquid", "~> 5.6"
   spec.add_dependency "redcarpet", "~> 3.6"
 end
