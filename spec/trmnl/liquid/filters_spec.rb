@@ -1,8 +1,6 @@
 require 'trmnl/liquid'
 
 describe TRMNL::Liquid::Filters do
-  before(:all) { TRMNL::Liquid.register_all }
-
   let(:service) { Liquid::Template }
 
   def expect_render(input, output, vars = {})

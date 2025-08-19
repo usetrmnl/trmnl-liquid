@@ -20,17 +20,9 @@ end
 
 module TRMNL
   module Liquid
-    def self.register_all
-      register_filters
-      register_template_tag
-    end
-    
-    def self.register_filters
-      ::Liquid::Template.register_filter(TRMNL::Liquid::Filters)
-    end
-
-    def self.register_template_tag
-      ::Liquid::Template.register_tag('template', TRMNL::Liquid::Template::TemplateTag)
-    end
+    # empty
   end
 end
+
+::Liquid::Template.register_filter(TRMNL::Liquid::Filters)
+::Liquid::Template.register_tag('template', TRMNL::Liquid::Template::TemplateTag)
