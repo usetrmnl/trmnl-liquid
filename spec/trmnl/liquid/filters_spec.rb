@@ -79,6 +79,12 @@ describe TRMNL::Liquid::Filters do
     expect_render('{{ data | json }}', '[{"a":1,"b":"c"},"d"]', 'data' => [{ 'a' => 1, 'b' => 'c' }, 'd'])
   end
 
+  it 'supports json_parse' do
+    input = '{"obj":{"a":1,"b":"c"},"d":[1,2,3]}'
+    expected = '{"obj"=>{"a"=>1, "b"=>"c"}, "d"=>[1, 2, 3]}'
+    expect_render('{{ data | json_parse }}', expected, 'data' => input)
+  end
+
   it 'supports sample' do
     expect(["1", "2", "3", "4", "5"].any? { |str| str == service.parse('{{ data | split: "," | sample }}').render({ "data" => "1,2,3,4,5" }) })
     expect(["cat", "dog"].any? { |str| str == service.parse('{{ data | split: "," | sample }}').render({ "data" => "cat,dog" }) })

@@ -69,6 +69,10 @@ module TRMNL
         JSON.generate(obj)
       end
 
+      def json_parse(obj)
+        JSON.parse(obj)
+      end
+
       def sample(array) = array.sample
 
       private
