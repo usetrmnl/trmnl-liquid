@@ -1,0 +1,44 @@
+#! /usr/bin/env ruby
+
+require_relative '../lib/trmnl/liquid/version'
+
+`git diff --cached --quiet`
+if $?.exitstatus != 0
+  puts "❌ Working directory is not clean. Aborting."
+  exit 1
+end
+
+new_version = TRMNL::Liquid::VERSION.next
+
+puts "✅ Current version: #{TRMNL::Liquid::VERSION}"
+puts "✅ Next version:    #{new_version}"
+
+print "⚠️  This will bump the version, commit, tag, and push to GitHub. Continue? [yN] "
+if gets.chomp.downcase != 'y'
+  puts "❌ Aborting."
+  exit 1
+end
+
+template = <<~TEMPLATE
+# frozen_string_literal: true
+module TRMNL
+  module Liquid
+    VERSION = "#{new_version}"
+  end
+end
+TEMPLATE
+
+puts "✏️  Updating version.rb..."
+File.write('lib/trmnl/liquid/version.rb', template)
+
+puts "🗄️  Committing changes..."
+`git add lib/trmnl/liquid/version.rb`
+`git commit -m "v#{new_version}"`
+
+puts "🏷️  Creating v#{new_version} tag..."
+`git tag "v#{new_version}"`
+
+puts "⬆️  Pushing to origin..."
+# `git push origin main --tags`
+
+puts "🎉 Done! v#{new_version} will be live on RubyGems in a few minutes."
