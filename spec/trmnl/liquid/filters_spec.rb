@@ -68,6 +68,11 @@ describe TRMNL::Liquid::Filters do
     expect_render("{{ '2025-01-11' | l_date: '%y %b', 'ko' }}", '25 1월')
   end
 
+  it 'supports map_to_i' do
+    expect_render('{% assign nums = "a, b, c, d, e" | split: ", " | map_to_i %}{{ nums }}', '00000')
+    expect_render('{% assign nums = "5, 4, 3, 2, 1" | split: ", " | map_to_i %}{{ nums }}', '54321')
+  end
+
   it 'supports pluralize' do
     expect_render('{{ "book" | pluralize: 1 }}', '1 book')
     expect_render('{{ "book" | pluralize: 2 }}', '2 books')
@@ -86,5 +91,10 @@ describe TRMNL::Liquid::Filters do
   it 'supports sample' do
     expect(["1", "2", "3", "4", "5"].any? { |str| str == service.parse('{{ data | split: "," | sample }}').render({ "data" => "1,2,3,4,5" }) })
     expect(["cat", "dog"].any? { |str| str == service.parse('{{ data | split: "," | sample }}').render({ "data" => "cat,dog" }) })
+  end
+
+  it 'supports where_exp' do
+    expect_render('{{ "just a string" | where_exp: "la", "le" }}', 'just a string')
+    expect_render('{% assign nums = "1, 2, 3, 4, 5" | split: ", " | map_to_i %}{{ nums | where_exp: "n", "n >= 3" }}', '345')
   end
 end
