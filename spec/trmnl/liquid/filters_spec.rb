@@ -97,4 +97,9 @@ describe TRMNL::Liquid::Filters do
     expect_render('{{ "just a string" | where_exp: "la", "le" }}', 'just a string')
     expect_render('{% assign nums = "1, 2, 3, 4, 5" | split: ", " | map_to_i %}{{ nums | where_exp: "n", "n >= 3" }}', '345')
   end
+
+  it 'supports ordinalize' do
+    expect_render('{{ "2025-10-02" | ordinalize: "%A, %B <<ordinal_day>>, %Y" }}', 'Thursday, October 2nd, 2025')
+    expect_render('{{ "2025-12-31 16:50:38 -0400" | ordinalize: "%A, %b <<ordinal_day>>" }}', 'Wednesday, Dec 31st')
+  end
 end
