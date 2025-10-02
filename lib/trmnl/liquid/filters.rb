@@ -2,6 +2,7 @@ require 'action_view'
 require 'date'
 require 'redcarpet'
 require 'tzinfo'
+require 'active_support/core_ext/integer/inflections'
 
 begin
   require 'i18n'
@@ -92,6 +93,12 @@ module TRMNL
             condition.evaluate(@context)
           end
         end || []
+      end
+
+      def ordinalize(date_str, strftime_exp)
+        date = Date.parse(date_str)
+        ordinal_day = date.day.ordinalize
+        date.strftime(strftime_exp.gsub('<<ordinal_day>>', ordinal_day))
       end
 
       private
