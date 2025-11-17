@@ -3,6 +3,7 @@ require 'date'
 require 'redcarpet'
 require 'tzinfo'
 require 'active_support/core_ext/integer/inflections'
+require 'trmnl/liquid/qr'
 
 begin
   require 'i18n'
@@ -13,6 +14,7 @@ end
 module TRMNL
   module Liquid
     module Filters
+      include TRMNL::Liquid::QR
       def append_random(var)
         "#{var}#{SecureRandom.hex(2)}"
       end
