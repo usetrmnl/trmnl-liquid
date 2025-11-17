@@ -6,7 +6,7 @@ module TRMNL
       TYPES = %i[text contact wifi sms event].freeze
       LEVELS = %i[l m q h].freeze
       DEFAULT_LEVEL = :m
-      DEFAULT_SIZE = 2
+      DEFAULT_SIZE = 11
 
       def qr(data, size = DEFAULT_SIZE, level = DEFAULT_LEVEL)
         return '' if data.nil? || data.to_s.strip.empty?
@@ -14,12 +14,12 @@ module TRMNL
         level = level.to_sym if level.is_a?(String)
         level = DEFAULT_LEVEL unless LEVELS.include?(level)
 
-        qrcode = RQRCode::QRCode.new(data, size: size, level: level)
+        qrcode = RQRCode::QRCode.new(data, level: level)
         qrcode.as_svg(
           color: '000',
           fill: 'fff',
           shape_rendering: 'crispEdges',
-          module_size: 11,
+          module_size: size || DEFAULT_SIZE,
           standalone: true,
           use_path: true,
           svg_attributes: {
