@@ -114,9 +114,13 @@ describe TRMNL::Liquid::Filters do
 
   it 'renders an SVG when data is provided' do
     svg = service.parse('{{ "Hello World" | qr_code }}', environment: environment).render
+
     expect(svg).to be_a(String)
     expect(svg).to start_with('<?xml')
     expect(svg).to include('class="qr-code"')
     expect(svg).to end_with('</svg>')
+
+    invalid_level_svg = service.parse('{{ "Hello World" | qr_code: 11, "INVALID" }}', environment: environment).render
+    expect(svg).to eql(invalid_level_svg)
   end
 end

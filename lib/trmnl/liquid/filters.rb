@@ -102,8 +102,9 @@ module TRMNL
         date.strftime(strftime_exp.gsub('<<ordinal_day>>', ordinal_day))
       end
 
-      def qr_code(data, size = 11, level = 'm')
-        level = 'm' unless %w[l m q h].include?(level.downcase!)
+      def qr_code(data, size = 11, level = '')
+        level.downcase!
+        level = 'h' unless %w[l m q h].include?(level)
 
         qrcode = RQRCode::QRCode.new(data, level:)
         qrcode.as_svg(
