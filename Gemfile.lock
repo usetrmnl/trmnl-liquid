@@ -13,6 +13,7 @@ PATH
       actionview (~> 8.0)
       liquid (~> 5.6)
       redcarpet (~> 3.6)
+      rqrcode (~> 3.0)
 
 GEM
   remote: https://rubygems.org/
@@ -172,7 +173,6 @@ DEPENDENCIES
   irb
   rails-i18n (~> 8.0)
   rake (~> 13.0)
-  rqrcode (~> 3.0)
   rspec
   trmnl-i18n!
   trmnl-liquid!
