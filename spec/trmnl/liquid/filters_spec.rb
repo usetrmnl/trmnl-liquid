@@ -15,22 +15,25 @@ describe TRMNL::Liquid::Filters do
 
   it 'supports days_ago' do
     expect_render('{{ 3 | days_ago }}', (Date.today - 3).to_s)
-    expect_render('{{ 5 | days_ago | date: "%b %d, %Y" }}', (Date.today - 5).strftime("%b %d, %Y"))
+    expect_render('{{ 5 | days_ago | date: "%b %d, %Y" }}', (Date.today - 5).strftime('%b %d, %Y'))
   end
 
   it 'supports find_by' do
-    collection = [{ "name" => "Ryan", "age" => 35 }, { "name" => "Sara", "age" => 29 }, { "name" => "Jimbob", "age" => 29 }]
+    collection = [{ 'name' => 'Ryan', 'age' => 35 }, { 'name' => 'Sara', 'age' => 29 },
+                  { 'name' => 'Jimbob', 'age' => 29 }]
     expected = '{"name"=>"Ryan", "age"=>35}'
-    expect_render("{{ collection | find_by: 'name', 'Ryan' }}", expected, { "collection" => collection })
+    expect_render("{{ collection | find_by: 'name', 'Ryan' }}", expected, { 'collection' => collection })
 
     # with optional fallback parameter
-    expect_render("{{ collection | find_by: 'name', 'ronak', 'Not Found' }}", 'Not Found', { "collection" => collection })
+    expect_render("{{ collection | find_by: 'name', 'ronak', 'Not Found' }}", 'Not Found',
+                  { 'collection' => collection })
   end
 
   it 'supports group_by' do
-    collection = [{ "name" => "Ryan", "age" => 35 }, { "name" => "Sara", "age" => 29 }, { "name" => "Jimbob", "age" => 29 }]
-    expected = "{35=>[{\"name\"=>\"Ryan\", \"age\"=>35}], 29=>[{\"name\"=>\"Sara\", \"age\"=>29}, {\"name\"=>\"Jimbob\", \"age\"=>29}]}"
-    expect_render("{{ collection | group_by: 'age' }}", expected, { "collection" => collection })
+    collection = [{ 'name' => 'Ryan', 'age' => 35 }, { 'name' => 'Sara', 'age' => 29 },
+                  { 'name' => 'Jimbob', 'age' => 29 }]
+    expected = '{35=>[{"name"=>"Ryan", "age"=>35}], 29=>[{"name"=>"Sara", "age"=>29}, {"name"=>"Jimbob", "age"=>29}]}'
+    expect_render("{{ collection | group_by: 'age' }}", expected, { 'collection' => collection })
   end
 
   it 'supports markdown_to_html' do
@@ -40,7 +43,7 @@ describe TRMNL::Liquid::Filters do
     expect_render(markdown, html_output, { 'adjective' => 'silly' })
 
     # in case input is undefined, prevent error
-    expect_render(nil, "")
+    expect_render(nil, '')
   end
 
   it 'supports number_with_delimiter' do
@@ -85,21 +88,35 @@ describe TRMNL::Liquid::Filters do
   end
 
   it 'supports parse_json' do
-    expect_render('{{ data | parse_json }}', [{ 'a' => 1, 'b' => 'c' }, 'd'].to_json, 'data' => '[{"a":1,"b":"c"},"d"]'.to_json)
+    expect_render('{{ data | parse_json }}', [{ 'a' => 1, 'b' => 'c' }, 'd'].to_json,
+                  'data' => '[{"a":1,"b":"c"},"d"]'.to_json)
   end
 
   it 'supports sample' do
-    expect(["1", "2", "3", "4", "5"].any? { |str| str == service.parse('{{ data | split: "," | sample }}').render({ "data" => "1,2,3,4,5" }) })
-    expect(["cat", "dog"].any? { |str| str == service.parse('{{ data | split: "," | sample }}').render({ "data" => "cat,dog" }) })
+    expect(%w[1 2 3 4 5].any? do |str|
+      str == service.parse('{{ data | split: "," | sample }}').render({ 'data' => '1,2,3,4,5' })
+    end)
+    expect(%w[cat dog].any? do |str|
+      str == service.parse('{{ data | split: "," | sample }}').render({ 'data' => 'cat,dog' })
+    end)
   end
 
   it 'supports where_exp' do
     expect_render('{{ "just a string" | where_exp: "la", "le" }}', 'just a string')
-    expect_render('{% assign nums = "1, 2, 3, 4, 5" | split: ", " | map_to_i %}{{ nums | where_exp: "n", "n >= 3" }}', '345')
+    expect_render('{% assign nums = "1, 2, 3, 4, 5" | split: ", " | map_to_i %}{{ nums | where_exp: "n", "n >= 3" }}',
+                  '345')
   end
 
   it 'supports ordinalize' do
     expect_render('{{ "2025-10-02" | ordinalize: "%A, %B <<ordinal_day>>, %Y" }}', 'Thursday, October 2nd, 2025')
     expect_render('{{ "2025-12-31 16:50:38 -0400" | ordinalize: "%A, %b <<ordinal_day>>" }}', 'Wednesday, Dec 31st')
+  end
+
+  it 'renders an SVG when data is provided' do
+    svg = service.parse('{{ "Hello World" | qr_code }}', environment: environment).render
+    expect(svg).to be_a(String)
+    expect(svg).to start_with('<?xml')
+    expect(svg).to include('class="qr-code"')
+    expect(svg).to end_with('</svg>')
   end
 end
