@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "actionview", "~> 8.0"
   spec.add_dependency "liquid", "~> 5.6"
   spec.add_dependency "redcarpet", "~> 3.6"
+  spec.add_dependency "rqrcode", "~> 3.0"
 end
