@@ -3,6 +3,7 @@ require 'date'
 require 'redcarpet'
 require 'tzinfo'
 require 'active_support/core_ext/integer/inflections'
+require 'rqrcode'
 
 begin
   require 'i18n'
@@ -101,6 +102,25 @@ module TRMNL
         date.strftime(strftime_exp.gsub('<<ordinal_day>>', ordinal_day))
       end
 
+      def qr_code(data, size = 11, level = 'm')
+        return '' if data.nil? || data.to_s.strip.empty?
+
+        level = 'm' unless %w[l m q h].include?(level.downcase)
+
+        qrcode = RQRCode::QRCode.new(data, level: level)
+        qrcode.as_svg(
+          color: '000',
+          fill: 'fff',
+          shape_rendering: 'crispEdges',
+          module_size: size || 11,
+          standalone: true,
+          use_path: true,
+          svg_attributes: {
+            class: 'qr-code'
+          }
+        )
+      end
+
       private
 
       def with_i18n(fallback, &block)
@@ -135,7 +155,7 @@ module TRMNL
       def parse_binary_comparison(parser)
         condition = parse_comparison(parser)
         first_condition = condition
-        while (binary_operator = parser.id?("and") || parser.id?("or"))
+        while (binary_operator = parser.id?('and') || parser.id?('or'))
           child_condition = parse_comparison(parser)
           condition.send(binary_operator, child_condition)
           condition = child_condition
