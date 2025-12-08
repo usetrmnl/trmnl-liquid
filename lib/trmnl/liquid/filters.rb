@@ -3,6 +3,8 @@ require 'redcarpet'
 require 'tzinfo'
 require 'rqrcode'
 
+require_relative 'fallback'
+
 # optional
 %w[
   i18n
@@ -44,25 +46,10 @@ module TRMNL
       end
 
       def number_with_delimiter(number, delimiter = ',', separator = '.')
-        return helpers.number_with_delimiter(number, delimiter: delimiter, separator: separator) if helpers.respond_to?(:number_with_delimiter)
-
-        # basic fallback implementation similar to Rails' number_with_delimiter
-        str = number.to_s
-
-        # return early if it's not a simple numeric-like string
-        return str unless str.match?(/\A-?\d+(\.\d+)?\z/)
-
-        integer, fractional = str.split('.')
-        negative = integer.start_with?('-')
-        integer = integer[1..] if negative
-
-        integer_with_delimiters = integer.reverse.scan(/\d{1,3}/).join(delimiter).reverse
-        integer_with_delimiters = "-#{integer_with_delimiters}" if negative
-
-        if fractional
-          integer_with_delimiters + separator + fractional
+        if helpers.respond_to?(:number_with_delimiter)
+          helpers.number_with_delimiter(number, delimiter: delimiter, separator: separator)
         else
-          integer_with_delimiters
+          Fallback.number_with_delimiter(number, delimiter, separator)
         end
       end
 
@@ -71,19 +58,10 @@ module TRMNL
           cur_switcher = with_i18n(:unit) do |i18n|
             i18n.available_locales.include?(unit_or_locale.to_sym) ? :locale : :unit
           end
-          opts = { delimiter:, separator: }.merge(cur_switcher => unit_or_locale)
+          opts = { delimiter:, separator:, precision: }.merge(cur_switcher => unit_or_locale)
           helpers.number_to_currency(number, **opts)
         else
-          # fallback
-          result = number_with_delimiter(number, delimiter, separator)
-          dollars, cents = result.split(separator)
-
-          if precision <= 0
-            "#{unit_or_locale}#{dollars}"
-          else
-            cents = cents.to_s[0..(precision - 1)].ljust(precision, '0')
-            "#{unit_or_locale}#{dollars}#{separator}#{cents}"
-          end
+          Fallback.number_to_currency(number, unit_or_locale, delimiter, separator, precision)
         end
       end
 
@@ -108,10 +86,11 @@ module TRMNL
         plural = opts['plural']
         locale = opts['locale'] || with_i18n(nil) { |i18n| i18n.locale } || 'en'
 
-        return helpers.pluralize(count, singular, plural: plural, locale: locale) if helpers.respond_to?(:pluralize)
-
-        plural ||= "#{singular}s"
-        count == 1 ? "1 #{singular}"  : "#{count} #{plural}"
+        if helpers.respond_to?(:pluralize)
+          helpers.pluralize(count, singular, plural: plural, locale: locale) 
+        else
+          Fallback.pluralize(count, singular, plural)
+        end
       end
 
       def json(obj)
@@ -142,25 +121,11 @@ module TRMNL
       def ordinalize(date_str, strftime_exp)
         date = Date.parse(date_str) 
         
-        if date.day.respond_to?(:ordinalize)
-          ordinal_day = date.day.ordinalize
-        else
-          # fallback
-          day = date.day
-          suffix =
-            if (11..13).include?(day % 100)
-              'th'
-            else
-              case day % 10
-              when 1 then 'st'
-              when 2 then 'nd'
-              when 3 then 'rd'
-              else 'th'
-              end
-            end
-
-          ordinal_day = "#{day}#{suffix}"
-        end
+        ordinal_day = if date.day.respond_to?(:ordinalize)
+                        date.day.ordinalize
+                      else
+                        Fallback.ordinalize(date.day)
+                      end
         
         date.strftime(strftime_exp.gsub('<<ordinal_day>>', ordinal_day))
       end
