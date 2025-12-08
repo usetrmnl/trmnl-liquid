@@ -57,6 +57,15 @@ gem "rails-i18n", "~> 8.0"
 gem "trmnl-i18n", github: "usetrmnl/trmnl-i18n", branch: "main" # recommended for the latest changes
 ```
 
+### Number and Text Formatting (Optional)
+
+This gem does not _require_ ActionView, but it will leverage ActionView helpers if they are available.
+
+```ruby
+# optional peer dependency
+gem "actionview", "~> 8.0"
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
