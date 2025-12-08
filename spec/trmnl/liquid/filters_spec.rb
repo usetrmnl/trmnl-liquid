@@ -77,10 +77,12 @@ describe TRMNL::Liquid::Filters do
   end
 
   it 'supports pluralize' do
+    expect_render('{{ "book" | pluralize: 0 }}', '0 books')
     expect_render('{{ "book" | pluralize: 1 }}', '1 book')
     expect_render('{{ "book" | pluralize: 2 }}', '2 books')
     expect_render('{{ "octopus" | pluralize: 3 }}', '3 octopi')
     expect_render('{{ "person" | pluralize: 4 }}', '4 people')
+    expect_render('{{ "person" | pluralize: 4, plural: "humans" }}', '4 humans')
   end
 
   it 'supports json' do

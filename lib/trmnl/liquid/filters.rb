@@ -67,8 +67,14 @@ module TRMNL
         collection.map(&:to_i)
       end
 
-      def pluralize(singular, count)
-        helpers.pluralize(count, singular)
+      def pluralize(singular, count, opts = {})
+        plural = opts['plural']
+        locale = opts['locale'] || with_i18n(nil) { |i18n| i18n.locale } || 'en'
+
+        return helpers.pluralize(count, singular, plural: plural, locale: locale) if helpers.respond_to?(:pluralize)
+
+        plural ||= "#{singular}s"
+        count == 1 ? "1 #{singular}"  : "#{count} #{plural}"
       end
 
       def json(obj)
@@ -175,10 +181,20 @@ module TRMNL
       end
 
       def helpers
+        optional_helper_modules = [
+          ::ActionView::Helpers::TextHelper,
+          ::ActionView::Helpers::NumberHelper
+        ]
+
         @helpers ||= begin
           mod = Module.new do
-            include ::ActionView::Helpers::NumberHelper
-            include ::ActionView::Helpers::TextHelper
+            optional_helper_modules.each do |helper|
+              begin
+                include helper
+              rescue NameError
+                next
+              end
+            end
           end
           Object.new.extend(mod)
         end
