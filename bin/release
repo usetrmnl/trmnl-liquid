@@ -9,13 +9,13 @@ if $?.exitstatus != 0
 end
 
 major, minor, patch = TRMNL::Liquid::VERSION.split('.').map(&:to_i)
-new_version = "#{major}.#{minor}.#{patch + 1}"
+new_version = ARGV[0] || "#{major}.#{minor}.#{patch + 1}"
 
 puts "✅ Current version: #{TRMNL::Liquid::VERSION}"
 puts "✅ Next version:    #{new_version}"
 
-print "⚠️  This will bump the version, commit, tag, and push to GitHub. Continue? [yN] "
-if gets.chomp.downcase != 'y'
+print "⚠️  This will bump the version, commit, tag, push to GitHub, and release on RubyGems. Continue? [yN] "
+if $stdin.gets.chomp.downcase != 'y'
   puts "❌ Aborting."
   exit 1
 end
