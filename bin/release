@@ -32,8 +32,12 @@ TEMPLATE
 puts "✏️  Updating version.rb..."
 File.write('lib/trmnl/liquid/version.rb', template)
 
+puts "✏️  Updating Gemfile.lock..."
+`bundle install`
+
 puts "🗄️  Committing changes..."
 `git add lib/trmnl/liquid/version.rb`
+`git add Gemfile.lock`
 `git commit -m "v#{new_version}"`
 
 puts "🏷️  Creating v#{new_version} tag..."
