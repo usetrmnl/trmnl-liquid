@@ -90,8 +90,8 @@ describe TRMNL::Liquid::Filters do
   end
 
   it 'supports parse_json' do
-    expect_render('{{ data | parse_json }}', [{ 'a' => 1, 'b' => 'c' }, 'd'].to_json,
-                  'data' => '[{"a":1,"b":"c"},"d"]'.to_json)
+    expect_render('{% assign parsed = data | parse_json %}{{ parsed.a }}', '1',
+                  'data' => %q|{"a":1,"b":"c"}|)
   end
 
   it 'supports sample' do

@@ -1,7 +1,9 @@
 require 'date'
+require 'json'
 require 'redcarpet'
 require 'tzinfo'
 require 'rqrcode'
+require 'securerandom'
 
 require_relative 'fallback'
 
@@ -10,9 +12,9 @@ require_relative 'fallback'
   i18n
   action_view
   active_support/core_ext/integer/inflections
-].each do |path|
+].each do |lib|
   begin
-    require path
+    require lib
   rescue LoadError
     nil
   end
@@ -202,24 +204,21 @@ module TRMNL
         ::Liquid::Condition.new(left_operand, operator, ::Liquid::Expression.parse(parser.expression))
       end
 
-      def helpers
-        optional_helper_modules = [
-          ::ActionView::Helpers::TextHelper,
+      class Helpers
+        %w[
+          ::ActionView::Helpers::TextHelper
           ::ActionView::Helpers::NumberHelper
-        ]
-
-        @helpers ||= begin
-          mod = Module.new do
-            optional_helper_modules.each do |helper|
-              begin
-                include helper
-              rescue NameError
-                next
-              end
-            end
+        ].each do |name|
+          begin
+            include Object.const_get(name)
+          rescue NameError
+            next
           end
-          Object.new.extend(mod)
         end
+      end
+
+      def helpers
+        @helpers ||= Helpers.new
       end
     end
   end
