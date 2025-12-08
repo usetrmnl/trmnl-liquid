@@ -38,8 +38,27 @@ module TRMNL
         service.render(markdown)
       end
 
-      def number_with_delimiter(number, delimiter = ',', separator = ',')
-        helpers.number_with_delimiter(number, delimiter: delimiter, separator: separator)
+      def number_with_delimiter(number, delimiter = ',', separator = '.')
+        return helpers.number_with_delimiter(number, delimiter: delimiter, separator: separator) if helpers.respond_to?(:number_with_delimiter)
+
+        # basic fallback implementation similar to Rails' number_with_delimiter
+        str = number.to_s
+
+        # return early if it's not a simple numeric-like string
+        return str unless str.match?(/\A-?\d+(\.\d+)?\z/)
+
+        integer, fractional = str.split('.')
+        negative = integer.start_with?('-')
+        integer = integer[1..] if negative
+
+        integer_with_delimiters = integer.reverse.scan(/\d{1,3}/).join(delimiter).reverse
+        integer_with_delimiters = "-#{integer_with_delimiters}" if negative
+
+        if fractional
+          integer_with_delimiters + separator + fractional
+        else
+          integer_with_delimiters
+        end
       end
 
       def number_to_currency(number, unit_or_locale = '$', delimiter = ',', separator = '.')
