@@ -61,12 +61,25 @@ module TRMNL
         end
       end
 
-      def number_to_currency(number, unit_or_locale = '$', delimiter = ',', separator = '.')
-        cur_switcher = with_i18n(:unit) do |i18n|
-          i18n.available_locales.include?(unit_or_locale.to_sym) ? :locale : :unit
+      def number_to_currency(number, unit_or_locale = '$', delimiter = ',', separator = '.', precision = 2)
+        if helpers.respond_to?(:number_to_currency)
+          cur_switcher = with_i18n(:unit) do |i18n|
+            i18n.available_locales.include?(unit_or_locale.to_sym) ? :locale : :unit
+          end
+          opts = { delimiter:, separator: }.merge(cur_switcher => unit_or_locale)
+          helpers.number_to_currency(number, **opts)
+        else
+          # fallback
+          result = number_with_delimiter(number, delimiter, separator)
+          dollars, cents = result.split(separator)
+
+          if precision <= 0
+            "#{unit_or_locale}#{dollars}"
+          else
+            cents = cents.to_s[0..(precision - 1)].ljust(precision, '0')
+            "#{unit_or_locale}#{dollars}#{separator}#{cents}"
+          end
         end
-        opts = { delimiter:, separator: }.merge(cur_switcher => unit_or_locale)
-        helpers.number_to_currency(number, **opts)
       end
 
       def l_word(word, locale)
