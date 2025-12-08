@@ -10,6 +10,7 @@ gem 'rake', '~> 13.0'
 gem 'rspec'
 
 # optional peer dependencies
+gem 'actionview', '~> 8.0'
 gem 'i18n', '~> 1.14'
 gem 'rails-i18n', '~> 8.0'
 gem 'trmnl-i18n', github: 'usetrmnl/trmnl-i18n', branch: 'main'

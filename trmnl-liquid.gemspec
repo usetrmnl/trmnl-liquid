@@ -27,8 +27,10 @@ Gem::Specification.new do |spec|
   spec.files = Dir["*.gemspec", "lib/**/*"]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "actionview", "~> 8.0"
+  spec.add_dependency "base64"
   spec.add_dependency "liquid", "~> 5.6"
   spec.add_dependency "redcarpet", "~> 3.6"
   spec.add_dependency "rqrcode", "~> 3.0"
+  spec.add_dependency "securerandom", ">= 0.3"
+  spec.add_dependency "tzinfo"
 end

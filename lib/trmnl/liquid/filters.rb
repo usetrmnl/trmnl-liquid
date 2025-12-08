@@ -1,14 +1,23 @@
-require 'action_view'
 require 'date'
+require 'json'
 require 'redcarpet'
 require 'tzinfo'
-require 'active_support/core_ext/integer/inflections'
 require 'rqrcode'
+require 'securerandom'
 
-begin
-  require 'i18n'
-rescue LoadError
-  nil
+require_relative 'fallback'
+
+# optional
+%w[
+  i18n
+  action_view
+  active_support/core_ext/integer/inflections
+].each do |lib|
+  begin
+    require lib
+  rescue LoadError
+    nil
+  end
 end
 
 module TRMNL
@@ -38,16 +47,24 @@ module TRMNL
         service.render(markdown)
       end
 
-      def number_with_delimiter(number, delimiter = ',', separator = ',')
-        helpers.number_with_delimiter(number, delimiter: delimiter, separator: separator)
+      def number_with_delimiter(number, delimiter = ',', separator = '.')
+        if helpers.respond_to?(:number_with_delimiter)
+          helpers.number_with_delimiter(number, delimiter: delimiter, separator: separator)
+        else
+          Fallback.number_with_delimiter(number, delimiter, separator)
+        end
       end
 
-      def number_to_currency(number, unit_or_locale = '$', delimiter = ',', separator = '.')
-        cur_switcher = with_i18n(:unit) do |i18n|
-          i18n.available_locales.include?(unit_or_locale.to_sym) ? :locale : :unit
+      def number_to_currency(number, unit_or_locale = '$', delimiter = ',', separator = '.', precision = 2)
+        if helpers.respond_to?(:number_to_currency)
+          cur_switcher = with_i18n(:unit) do |i18n|
+            i18n.available_locales.include?(unit_or_locale.to_sym) ? :locale : :unit
+          end
+          opts = { delimiter:, separator:, precision: }.merge(cur_switcher => unit_or_locale)
+          helpers.number_to_currency(number, **opts)
+        else
+          Fallback.number_to_currency(number, unit_or_locale, delimiter, separator, precision)
         end
-        opts = { delimiter:, separator: }.merge(cur_switcher => unit_or_locale)
-        helpers.number_to_currency(number, **opts)
       end
 
       def l_word(word, locale)
@@ -67,8 +84,15 @@ module TRMNL
         collection.map(&:to_i)
       end
 
-      def pluralize(singular, count)
-        helpers.pluralize(count, singular)
+      def pluralize(singular, count, opts = {})
+        plural = opts['plural']
+        locale = opts['locale'] || with_i18n(nil) { |i18n| i18n.locale } || 'en'
+
+        if helpers.respond_to?(:pluralize)
+          helpers.pluralize(count, singular, plural: plural, locale: locale) 
+        else
+          Fallback.pluralize(count, singular, plural)
+        end
       end
 
       def json(obj)
@@ -97,8 +121,14 @@ module TRMNL
       end
 
       def ordinalize(date_str, strftime_exp)
-        date = Date.parse(date_str)
-        ordinal_day = date.day.ordinalize
+        date = Date.parse(date_str) 
+        
+        ordinal_day = if date.day.respond_to?(:ordinalize)
+                        date.day.ordinalize
+                      else
+                        Fallback.ordinalize(date.day)
+                      end
+        
         date.strftime(strftime_exp.gsub('<<ordinal_day>>', ordinal_day))
       end
 
@@ -174,14 +204,21 @@ module TRMNL
         ::Liquid::Condition.new(left_operand, operator, ::Liquid::Expression.parse(parser.expression))
       end
 
-      def helpers
-        @helpers ||= begin
-          mod = Module.new do
-            include ::ActionView::Helpers::NumberHelper
-            include ::ActionView::Helpers::TextHelper
+      class Helpers
+        %w[
+          ::ActionView::Helpers::TextHelper
+          ::ActionView::Helpers::NumberHelper
+        ].each do |name|
+          begin
+            include Object.const_get(name)
+          rescue NameError
+            next
           end
-          Object.new.extend(mod)
         end
+      end
+
+      def helpers
+        @helpers ||= Helpers.new
       end
     end
   end
