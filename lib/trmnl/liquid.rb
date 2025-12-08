@@ -7,6 +7,7 @@ require 'trmnl/liquid/file_system'
 require 'trmnl/liquid/template_tag'
 require 'trmnl/liquid/version'
 
+# optional
 begin
   require 'trmnl/i18n'
 rescue LoadError

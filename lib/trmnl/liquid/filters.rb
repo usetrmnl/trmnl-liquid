@@ -1,14 +1,19 @@
-require 'action_view'
 require 'date'
 require 'redcarpet'
 require 'tzinfo'
-require 'active_support/core_ext/integer/inflections'
 require 'rqrcode'
 
-begin
-  require 'i18n'
-rescue LoadError
-  nil
+# optional
+%w[
+  i18n
+  action_view
+  active_support/core_ext/integer/inflections
+].each do |path|
+  begin
+    require path
+  rescue LoadError
+    nil
+  end
 end
 
 module TRMNL
@@ -135,8 +140,28 @@ module TRMNL
       end
 
       def ordinalize(date_str, strftime_exp)
-        date = Date.parse(date_str)
-        ordinal_day = date.day.ordinalize
+        date = Date.parse(date_str) 
+        
+        if date.day.respond_to?(:ordinalize)
+          ordinal_day = date.day.ordinalize
+        else
+          # fallback
+          day = date.day
+          suffix =
+            if (11..13).include?(day % 100)
+              'th'
+            else
+              case day % 10
+              when 1 then 'st'
+              when 2 then 'nd'
+              when 3 then 'rd'
+              else 'th'
+              end
+            end
+
+          ordinal_day = "#{day}#{suffix}"
+        end
+        
         date.strftime(strftime_exp.gsub('<<ordinal_day>>', ordinal_day))
       end
 
