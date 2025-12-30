@@ -132,6 +132,42 @@ module TRMNL
         date.strftime(strftime_exp.gsub('<<ordinal_day>>', ordinal_day))
       end
 
+      def relative_time(date_str, from_date = nil, locale = 'en')
+        target = to_datetime(date_str)
+        base = from_date ? to_datetime(from_date) : DateTime.now
+        
+        seconds_diff = ((target.to_time - base.to_time)).to_i
+        is_future = seconds_diff > 0
+        seconds_diff = seconds_diff.abs
+        
+       
+        intervals = {
+          year: 31536000,
+          month: 2592000,
+          week: 604800,
+          day: 86400,
+          hour: 3600,
+          minute: 60
+        }
+        
+        # Find the corresponding interval
+        interval_name, interval_seconds = intervals.find { |_, secs| seconds_diff >= secs }
+        
+        if interval_name
+          count = (seconds_diff / interval_seconds).floor
+          time_phrase = pluralize(interval_name.to_s, count)
+          
+          if is_future
+            "in #{time_phrase}"
+          else
+            "#{time_phrase} ago"
+          end
+        else
+          "just now"
+        end
+      end
+
+
       def qr_code(data, size = 11, level = '')
         level.downcase!
         level = 'h' unless %w[l m q h].include?(level)

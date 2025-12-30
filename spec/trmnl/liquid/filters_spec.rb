@@ -125,4 +125,44 @@ describe TRMNL::Liquid::Filters do
     invalid_level_svg = service.parse('{{ "Hello World" | qr_code: 11, "INVALID" }}', environment: environment).render
     expect(svg).to eql(invalid_level_svg)
   end
+
+  describe 'relative_time' do
+    it 'returns just now for recent timestamps' do
+      now = DateTime.parse('2025-12-31 12:00:00')
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      expect_render('{{ "2025-12-31 11:59:30" | relative_time }}', 'just now')
+    end
+    
+    it 'show time ago for past dates' do
+      now = DateTime.parse('2025-12-31 12:00:00')
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      expect_render('{{ "2025-12-31 11:00:00" | relative_time }}', '1 hour ago')
+      expect_render('{{ "2025-12-31 10:00:00" | relative_time }}', '2 hours ago')
+      expect_render('{{ "2025-12-30 12:00:00" | relative_time }}', '1 day ago')
+      expect_render('{{ "2025-12-24 12:00:00" | relative_time }}', '1 week ago')
+    end
+    
+    it 'returns relative time for future dates' do
+      now = DateTime.parse('2025-12-31 12:00:00')
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      expect_render('{{ "2025-12-31 13:30:00" | relative_time }}', 'in 1 hour')
+      expect_render('{{ "2026-01-01 12:00:00" | relative_time }}', 'in 1 day')
+      expect_render('{{ "2026-01-07 12:00:00" | relative_time }}', 'in 1 week')
+    end
+    
+    it 'test with custom base date time' do
+      expect_render('{{ "2025-12-25 12:00:00" | relative_time: "2025-12-31 12:00:00" }}', '6 days ago')
+    end
+    
+    it 'test for handling month and years' do
+      now = DateTime.parse('2025-12-31 12:00:00')
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      expect_render('{{ "2024-12-31 12:00:00" | relative_time }}', '1 year ago')
+      expect_render('{{ "2025-11-30 12:00:00" | relative_time }}', '1 month ago')
+    end
+  end
 end
