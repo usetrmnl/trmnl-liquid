@@ -140,7 +140,6 @@ module TRMNL
         is_future = seconds_diff > 0
         seconds_diff = seconds_diff.abs
         
-       
         intervals = {
           year: 31536000,
           month: 2592000,
@@ -155,17 +154,35 @@ module TRMNL
         
         if interval_name
           count = (seconds_diff / interval_seconds).floor
-          time_phrase = pluralize(interval_name.to_s, count)
           
-          if is_future
-            "in #{time_phrase}"
-          else
-            "#{time_phrase} ago"
+          # Get the translated time unit with pluralization
+          with_i18n("#{count} #{interval_name}#{'s' if count != 1}") do |i18n|
+            # Determine if we need singular or plural
+            unit_key = count == 1 ? 'one' : 'other'
+            
+            # Look up the translated unit (e.g., "hora" or "horas" for Spanish)
+            unit = i18n.t("custom_plugins.#{interval_name}.#{unit_key}", 
+                          locale: locale, 
+                          default: "#{interval_name}#{'s' if count != 1}")
+            
+            time_phrase = "#{count} #{unit}"
+            
+            if is_future
+              prefix = i18n.t('custom_plugins.in', locale: locale, default: 'in')
+              "#{prefix} #{time_phrase}"
+            else
+              suffix = i18n.t('custom_plugins.ago', locale: locale, default: 'ago')
+              "#{time_phrase} #{suffix}"
+            end
           end
         else
-          "just now"
+          with_i18n('just now') do |i18n|
+            i18n.t('custom_plugins.just_now', locale: locale, default: 'just now')
+          end
         end
       end
+
+
 
 
       def qr_code(data, size = 11, level = '')
