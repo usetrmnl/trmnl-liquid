@@ -157,11 +157,9 @@ module TRMNL
           
           # Get the translated time unit with pluralization
           with_i18n("#{count} #{interval_name}#{'s' if count != 1}") do |i18n|
-            # Determine if we need singular or plural
-            unit_key = count == 1 ? 'one' : 'other'
-            
-            # Look up the translated unit (e.g., "hora" or "horas" for Spanish)
-            unit = i18n.t("custom_plugins.#{interval_name}.#{unit_key}", 
+            # Let i18n handle pluralization automatically based on count and locale
+            unit = i18n.t("custom_plugins.#{interval_name}", 
+                          count: count,
                           locale: locale, 
                           default: "#{interval_name}#{'s' if count != 1}")
             
@@ -181,6 +179,7 @@ module TRMNL
           end
         end
       end
+
 
 
 
