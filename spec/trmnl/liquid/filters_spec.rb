@@ -168,41 +168,42 @@ describe TRMNL::Liquid::Filters do
     it 'supports i18n when translations are available' do
       skip 'I18n not available' unless defined?(::I18n)
       
-      now = DateTime.parse('2025-12-31 12:00:00')
+      now = DateTime.parse('2026-01-02 12:00:00')  # Changed to Jan 2, 2026
       allow(DateTime).to receive(:now).and_return(now)
       
-      # Mock Spanish translations
-      allow(I18n).to receive(:t).with('datetime.distance_in_words.ago', locale: 'es', default: 'ago').and_return('hace')
-      allow(I18n).to receive(:t).with('datetime.distance_in_words.in', locale: 'es', default: 'in').and_return('en')
-      allow(I18n).to receive(:t).with('datetime.distance_in_words.just_now', locale: 'es', default: 'just now').and_return('ahora mismo')
+      # Allow all calls to go through normally, then override specific ones
+      allow(I18n).to receive(:t).and_call_original
       
-      expect_render('{{ "2025-12-30 12:00:00" | relative_time: nil, "es" }}', '1 day hace')
-      expect_render('{{ "2026-01-01 12:00:00" | relative_time: nil, "es" }}', 'en 1 day')
-      expect_render('{{ "2025-12-31 11:59:30" | relative_time: nil, "es" }}', 'ahora mismo')
+      # Mock the specific calls our filter will make
+      allow(I18n).to receive(:t).with('custom_plugins.day', hash_including(count: 2, locale: 'es')).and_return('días')
+      allow(I18n).to receive(:t).with('custom_plugins.day', hash_including(count: 1, locale: 'es')).and_return('día')
+      allow(I18n).to receive(:t).with('custom_plugins.ago', hash_including(locale: 'es')).and_return('hace')
+      allow(I18n).to receive(:t).with('custom_plugins.in', hash_including(locale: 'es')).and_return('en')
+      allow(I18n).to receive(:t).with('custom_plugins.just_now', hash_including(locale: 'es')).and_return('ahora mismo')
+      
+      expect_render('{{ "2025-12-31 12:00:00" | relative_time: nil, "es" }}', '2 días hace')
+      expect_render('{{ "2026-01-03 12:00:00" | relative_time: nil, "es" }}', 'en 1 día')
+      expect_render('{{ "2026-01-02 11:59:30" | relative_time: nil, "es" }}', 'ahora mismo')
     end
-    
-    it 'falls back to English when i18n is not available' do
-      # Temporarily hide I18n constant if it exists
-      if defined?(::I18n)
-        i18n_backup = ::I18n
-        Object.send(:remove_const, :I18n)
-      end
+
+
+
+    it 'falls back to English when translations are not available' do
+      skip 'I18n not available' unless defined?(::I18n)
       
-      begin
-        now = DateTime.parse('2025-12-31 12:00:00')
-        allow(DateTime).to receive(:now).and_return(now)
+      now = DateTime.parse('2026-01-02 12:00:00')  # Changed to Jan 2, 2026
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      # Use a valid locale that has no custom_plugins translations
+      # This tests the default: parameter fallback
+      expect_render('{{ "2025-12-31 12:00:00" | relative_time: nil, "de" }}', '2 days ago')
+      expect_render('{{ "2026-01-03 12:00:00" | relative_time: nil, "de" }}', 'in 1 day')
+      expect_render('{{ "2026-01-02 11:59:30" | relative_time: nil, "de" }}', 'just now')
+    end
+
         
-        # Should use English fallbacks when I18n is not defined
-        expect_render('{{ "2025-12-30 12:00:00" | relative_time: nil, "es" }}', '1 day ago')
-        expect_render('{{ "2026-01-01 12:00:00" | relative_time: nil, "fr" }}', 'in 1 day')
-        expect_render('{{ "2025-12-31 11:59:30" | relative_time: nil, "de" }}', 'just now')
-      ensure
-        # Restore I18n constant if it was removed
-        if i18n_backup
-          ::I18n = i18n_backup
-        end
-      end
-    end
+
+
   end
 
 
