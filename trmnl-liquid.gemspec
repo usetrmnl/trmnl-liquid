@@ -1,17 +1,13 @@
 # frozen_string_literal: true
 
-require_relative "lib/trmnl/liquid/version"
-
 Gem::Specification.new do |spec|
   spec.name = "trmnl-liquid"
-  spec.version = TRMNL::Liquid::VERSION
+  spec.version = "0.4.0"
   spec.authors = ["TRMNL"]
-  spec.email = ["engineering@usetrmnl.com"]
+  spec.email = ["engineering@trmnl.com"]
   spec.homepage = "https://github.com/usetrmnl/trmnl-liquid"
-
   spec.summary = "Liquid templating engine for TRMNL plugins"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata = {
     "bug_tracker_uri" => "https://github.com/usetrmnl/trmnl-liquid/issues",
@@ -22,15 +18,16 @@ Gem::Specification.new do |spec|
     "source_code_uri" => "https://github.com/usetrmnl/trmnl-liquid"
   }
 
-  # Specify which files should be added to the gem when it is released.
-  # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
-  spec.files = Dir["*.gemspec", "lib/**/*"]
-  spec.require_paths = ["lib"]
+  spec.signing_key = Gem.default_key_path
+  spec.cert_chain = [Gem.default_cert_path]
 
-  spec.add_dependency "base64"
-  spec.add_dependency "liquid", "~> 5.6"
+  spec.required_ruby_version = ">= 4.0"
+
+  spec.add_dependency "liquid", "~> 5.11"
   spec.add_dependency "redcarpet", "~> 3.6"
-  spec.add_dependency "rqrcode", "~> 3.0"
-  spec.add_dependency "securerandom", ">= 0.3"
-  spec.add_dependency "tzinfo"
+  spec.add_dependency "rqrcode", "~> 3.2"
+  spec.add_dependency "tzinfo", "~> 2.0"
+
+  spec.extra_rdoc_files = Dir["README*", "LICENSE*"]
+  spec.files = Dir["*.gemspec", "lib/**/*"]
 end
