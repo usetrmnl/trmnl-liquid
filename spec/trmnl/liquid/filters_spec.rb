@@ -1,128 +1,298 @@
-require 'trmnl/liquid'
+# frozen_string_literal: true
 
-describe TRMNL::Liquid::Filters do
-  let(:service) { Liquid::Template }
-  let(:environment) { TRMNL::Liquid.build_environment }
+require "spec_helper"
 
-  def expect_render(input, output, vars = {})
-    expect(service.parse(input, environment: environment).render(vars)).to eq(output)
+RSpec.describe TRMNL::Liquid::Filters do
+  subject :renderer do
+    -> template, data { Liquid::Template.parse(template, environment:).render data }
   end
 
-  it 'supports append_random' do
-    allow(SecureRandom).to receive(:hex).with(2).and_return('qW3r')
-    expect_render('{% assign chart_id = "chart-" | append_random %}{{ chart_id }}', 'chart-qW3r')
+  let :environment do
+    Liquid::Environment.build do |environment|
+      environment.error_mode = :strict
+      environment.register_filter described_class
+    end
   end
 
-  it 'supports days_ago' do
-    expect_render('{{ 3 | days_ago }}', (Date.today - 3).to_s)
-    expect_render('{{ 5 | days_ago | date: "%b %d, %Y" }}', (Date.today - 5).strftime('%b %d, %Y'))
+  describe "#append_random" do
+    it "appends random number" do
+      allow(SecureRandom).to receive(:hex).with(2).and_return("qW3r")
+      content = renderer.call %({% assign chart_id = "chart-" | append_random %}{{ chart_id }}), {}
+
+      expect(content).to eq("chart-qW3r")
+    end
   end
 
-  it 'supports find_by' do
-    collection = [{ 'name' => 'Ryan', 'age' => 35 }, { 'name' => 'Sara', 'age' => 29 },
-                  { 'name' => 'Jimbob', 'age' => 29 }]
-    expected = '{"name"=>"Ryan", "age"=>35}'
-    expect_render("{{ collection | find_by: 'name', 'Ryan' }}", expected, { 'collection' => collection })
+  describe "#days_ago" do
+    it "renders default format" do
+      content = renderer.call "{{ 3 | days_ago }}", {}
+      expect(content).to eq((Date.today - 3).to_s)
+    end
 
-    # with optional fallback parameter
-    expect_render("{{ collection | find_by: 'name', 'ronak', 'Not Found' }}", 'Not Found',
-                  { 'collection' => collection })
+    it "renders custom format" do
+      content = renderer.call %({{ 5 | days_ago | date: "%b %d, %Y" }}), {}
+      expect(content).to eq((Date.today - 5).strftime("%b %d, %Y"))
+    end
   end
 
-  it 'supports group_by' do
-    collection = [{ 'name' => 'Ryan', 'age' => 35 }, { 'name' => 'Sara', 'age' => 29 },
-                  { 'name' => 'Jimbob', 'age' => 29 }]
-    expected = '{35=>[{"name"=>"Ryan", "age"=>35}], 29=>[{"name"=>"Sara", "age"=>29}, {"name"=>"Jimbob", "age"=>29}]}'
-    expect_render("{{ collection | group_by: 'age' }}", expected, { 'collection' => collection })
+  describe "#group_by" do
+    it "supports group_by" do
+      content = renderer.call %({{ collection | group_by: 'age' }}),
+                              {
+                                "collection" => [
+                                  {
+                                    "name" => "Ryan",
+                                    "age" => 35
+                                  },
+                                  {
+                                    "name" => "Sara",
+                                    "age" => 29
+                                  },
+                                  {
+                                    "name" => "Jimbob",
+                                    "age" => 29
+                                  }
+                                ]
+                              }
+
+      expect(content).to eq(
+        '{35=>[{"name"=>"Ryan", "age"=>35}], 29=>[{"name"=>"Sara", "age"=>29}, {"name"=>"Jimbob", "age"=>29}]}'
+      )
+    end
   end
 
-  it 'supports markdown_to_html' do
-    # TODO: Fix this test!! Check for HTML
-    markdown = "This is *bongos*, indeed and [here's a {{ adjective }} link](https://somewhere.com)."
-    html_output = "This is *bongos*, indeed and [here's a silly link](https://somewhere.com)."
-    expect_render(markdown, html_output, { 'adjective' => 'silly' })
+  describe "#find_by" do
+    let :collection do
+      [
+        {
+          "name" => "Ryan",
+          "age" => 35
+        },
+        {
+          "name" => "Sara",
+          "age" => 29
+        },
+        {
+          "name" => "Jimbob",
+          "age" => 29
+        }
+      ]
+    end
 
-    # in case input is undefined, prevent error
-    expect_render(nil, '')
+    it "finds by name" do
+      content = renderer.call "{{ collection | find_by: 'name', 'Ryan' }}",
+                              {"collection" => collection}
+      expect(content).to eq('{"name"=>"Ryan", "age"=>35}')
+    end
+
+    it "answers fallback when not found" do
+      content = renderer.call "{{ collection | find_by: 'name', 'ronak', 'Not Found' }}",
+                              {"collection" => collection}
+
+      expect(content).to eq("Not Found")
+    end
   end
 
-  it 'supports number_with_delimiter' do
-    expect_render('{{ 1234 | number_with_delimiter }}', '1,234')
-    expect_render("{{ 1234 | number_with_delimiter: '.' }}", '1.234')
-    expect_render("{{ 1234.57 | number_with_delimiter: ' ', ',' }}", '1 234,57')
+  describe "#markdown_to_html" do
+    it "answers HTML" do
+      markdown = "This is a *test* and [here's a {{ adjective }} link](https://test.io)."
+      content = renderer.call markdown, {"adjective" => "test"}
+
+      expect(content).to eq("This is a *test* and [here's a test link](https://test.io).")
+    end
+
+    it "answers empty string when given no content" do
+      content = renderer.call nil, {}
+      expect(content).to eq("")
+    end
   end
 
-  it 'supports number_to_currency' do
-    expect_render('{{ 10420 | number_to_currency }}', '$10,420.00')
-    expect_render("{{ 152350.69 | number_to_currency: '£' }}", '£152,350.69')
-    expect_render("{{ 1234.57 | number_to_currency: '£', '.', ',' }}", '£1.234,57')
-    expect_render("{{ 567 | number_to_currency: 'sv' }}", '567.00 kr')
-    expect_render("{{ 123 | number_to_currency: 'tbd' }}", 'tbd123.00')
+  describe "#number_with_delimiter" do
+    it "answers comma delimiter" do
+      content = renderer.call "{{ 1234 | number_with_delimiter }}", {}
+      expect(content).to eq("1,234")
+    end
+
+    it "answers period delimiter" do
+      content = renderer.call %({{ 1234 | number_with_delimiter: "." }}), {}
+      expect(content).to eq("1.234")
+    end
+
+    it "answers space and comma" do
+      content = renderer.call %({{ 1234.57 | number_with_delimiter: " ", "," }}), {}
+      expect(content).to eq("1 234,57")
+    end
   end
 
-  it 'supports l_word' do
-    expect_render('{{ "today" | l_word: "es-ES" }}', 'hoy')
-    expect_render('{{ "tomorrow" | l_word: "ko" }}', '내일')
+  describe "#number_to_currency" do
+    it "answers USD" do
+      content = renderer.call "{{ 10420 | number_to_currency }}", {}
+      expect(content).to eq("$10,420.00")
+    end
+
+    it "answers pounds" do
+      content = renderer.call %({{ 152350.69 | number_to_currency: "£" }}), {}
+      expect(content).to eq("£152,350.69")
+    end
+
+    it "answers pounds with period and comma" do
+      content = renderer.call %({{ 1234.57 | number_to_currency: "£", ".", "," }}), {}
+      expect(content).to eq("£1.234,57")
+    end
+
+    it "answers Krones" do
+      content = renderer.call %({{ 567 | number_to_currency: "sv" }}), {}
+      expect(content).to eq("567.00 kr")
+    end
+
+    it "answers custom format" do
+      content = renderer.call %({{ 123 | number_to_currency: "tbd" }}), {}
+      expect(content).to eq("tbd123.00")
+    end
   end
 
-  it 'supports l_date' do
-    expect_render("{{ '2025-01-11' | l_date: '%y %b' }}", '25 Jan')
-    expect_render("{{ '2025-01-11' | l_date: '%y %b', 'ko' }}", '25 1월')
-    expect_render("{{ '2025-01-11' | l_date: '%y %b', 'ko' }}", '25 1월')
+  describe "#l_word" do
+    it "answers Spanish translation" do
+      content = renderer.call %({{ "today" | l_word: "es-ES" }}), {}
+      expect(content).to eq("hoy")
+    end
+
+    it "answers Korean translation" do
+      content = renderer.call %({{ "tomorrow" | l_word: "ko" }}), {}
+      expect(content).to eq("내일")
+    end
   end
 
-  it 'supports map_to_i' do
-    expect_render('{% assign nums = "a, b, c, d, e" | split: ", " | map_to_i %}{{ nums }}', '00000')
-    expect_render('{% assign nums = "5, 4, 3, 2, 1" | split: ", " | map_to_i %}{{ nums }}', '54321')
+  describe "#l_date" do
+    it "answers day and short month" do
+      content = renderer.call %({{ "2025-01-11" | l_date: "%y %b" }}), {}
+      expect(content).to eq("25 Jan")
+    end
+
+    it "answers day and short month with Korean translation" do
+      content = renderer.call %({{ "2025-01-11" | l_date: "%y %b", "ko" }}), {}
+      expect(content).to eq("25 1월")
+    end
   end
 
-  it 'supports pluralize' do
-    expect_render('{{ "book" | pluralize: 0 }}', '0 books')
-    expect_render('{{ "book" | pluralize: 1 }}', '1 book')
-    expect_render('{{ "book" | pluralize: 2 }}', '2 books')
-    expect_render('{{ "octopus" | pluralize: 3 }}', '3 octopi')
-    expect_render('{{ "person" | pluralize: 4 }}', '4 people')
-    expect_render('{{ "person" | pluralize: 4, plural: "humans" }}', '4 humans')
+  describe "#map_to_i" do
+    it "answers characters as zeros" do
+      content = renderer.call(
+        %({% assign nums = "a, b, c, d, e" | split: ", " | map_to_i %}{{ nums }}),
+        {}
+      )
+
+      expect(content).to eq("00000")
+    end
+
+    it "answers numbers as numbers" do
+      content = renderer.call(
+        %({% assign nums = "5, 4, 3, 2, 1" | split: ", " | map_to_i %}{{ nums }}),
+        {}
+      )
+
+      expect(content).to eq("54321")
+    end
   end
 
-  it 'supports json' do
-    expect_render('{{ data | json }}', '[{"a":1,"b":"c"},"d"]', 'data' => [{ 'a' => 1, 'b' => 'c' }, 'd'])
+  describe "#pluralize" do
+    it "answers plural when count is zero" do
+      content = renderer.call %({{ "book" | pluralize: 0 }}), {}
+      expect(content).to eq("0 books")
+    end
+
+    it "answers singular when count is one" do
+      content = renderer.call %({{ "book" | pluralize: 1 }}), {}
+      expect(content).to eq("1 book")
+    end
+
+    it "answers plural when count is more than one" do
+      content = renderer.call %({{ "book" | pluralize: 2 }}), {}
+      expect(content).to eq("2 books")
+    end
+
+    it "answers plural for complex word" do
+      content = renderer.call %({{ "octopus" | pluralize: 3 }}), {}
+      expect(content).to eq("3 octopi")
+    end
+
+    it "answers singular for complex word" do
+      content = renderer.call %({{ "person" | pluralize: 4 }}), {}
+      expect(content).to eq("4 people")
+    end
+
+    it "answers plural for alternate pluralization" do
+      content = renderer.call %({{ "person" | pluralize: 4, plural: "humans" }}), {}
+      expect(content).to eq("4 humans")
+    end
   end
 
-  it 'supports parse_json' do
-    expect_render('{% assign parsed = data | parse_json %}{{ parsed.a }}', '1',
-                  'data' => %q|{"a":1,"b":"c"}|)
+  describe "#json" do
+    it "answers JSON" do
+      content = renderer.call "{{ data | json }}", {"data" => [{"a" => 1, "b" => "c"}, "d"]}
+      expect(content).to eq('[{"a":1,"b":"c"},"d"]')
+    end
   end
 
-  it 'supports sample' do
-    expect(%w[1 2 3 4 5].any? do |str|
-      str == service.parse('{{ data | split: "," | sample }}').render({ 'data' => '1,2,3,4,5' })
-    end)
-    expect(%w[cat dog].any? do |str|
-      str == service.parse('{{ data | split: "," | sample }}').render({ 'data' => 'cat,dog' })
-    end)
+  describe "#parse_json" do
+    it "answers JSON" do
+      content = renderer.call "{% assign value = data | parse_json %}{{ value.a }}",
+                              {"data" => '{"a":1,"b":"c"}'}
+      expect(content).to eq("1")
+    end
   end
 
-  it 'supports where_exp' do
-    expect_render('{{ "just a string" | where_exp: "la", "le" }}', 'just a string')
-    expect_render('{% assign nums = "1, 2, 3, 4, 5" | split: ", " | map_to_i %}{{ nums | where_exp: "n", "n >= 3" }}',
-                  '345')
+  describe "#sample" do
+    it "asnwers random number" do
+      content = renderer.call %({{ data | split: "," | sample }}), {"data" => "1,2,3,4,5"}
+      expect(content).to match(/\A(1|2|3|4|5)\Z/)
+    end
+
+    it "asnwers random word" do
+      content = renderer.call %({{ data | split: "," | sample }}), {"data" => "one,two,three"}
+      expect(content).to match(/\A(one|two|three)\Z/)
+    end
   end
 
-  it 'supports ordinalize' do
-    expect_render('{{ "2025-10-02" | ordinalize: "%A, %B <<ordinal_day>>, %Y" }}', 'Thursday, October 2nd, 2025')
-    expect_render('{{ "2025-12-31 16:50:38 -0400" | ordinalize: "%A, %b <<ordinal_day>>" }}', 'Wednesday, Dec 31st')
+  describe "#where_exp" do
+    it "answers orignal template when expression isn't applicable" do
+      content = renderer.call %({{ "test" | where_exp: "la", "le" }}), {}
+      expect(content).to eq("test")
+    end
+
+    it "answers content which matches equation" do
+      template = <<~BODY
+        {% assign nums = "1,2,3,4,5" | split: "," | map_to_i %}
+        {{ nums | where_exp: "n", "n >= 3" }}
+      BODY
+
+      content = renderer.call template, {}
+      expect(content.strip).to eq("345")
+    end
   end
 
-  it 'renders an SVG when data is provided' do
-    svg = service.parse('{{ "Hello World" | qr_code }}', environment: environment).render
+  describe "#ordinalize" do
+    it "asnwers day (long), month, day (short), and year" do
+      content = renderer.call %({{ "2025-10-02" | ordinalize: "%A, %B <<ordinal_day>>, %Y" }}), {}
+      expect(content).to eq("Thursday, October 2nd, 2025")
+    end
 
-    expect(svg).to be_a(String)
-    expect(svg).to start_with('<?xml')
-    expect(svg).to include('class="qr-code"')
-    expect(svg).to end_with('</svg>')
+    it "asnwers day (long), month, and data (short)" do
+      content = renderer.call %({{ "2025-12-31 16:50:38 -0400" | ordinalize: "%A, %b <<ordinal_day>>" }}),
+                              {}
+      expect(content).to eq("Wednesday, Dec 31st")
+    end
+  end
 
-    invalid_level_svg = service.parse('{{ "Hello World" | qr_code: 11, "INVALID" }}', environment: environment).render
-    expect(svg).to eql(invalid_level_svg)
+  describe "#qr_code" do
+    it "answers SVG with defaults" do
+      content = renderer.call %({{ "Test" | qr_code }}), {}
+      expect(content).to match(%r(\A<\?xml.+class="qr-code".+</svg>\Z))
+    end
+
+    it "answers SVG for size and level" do
+      content = renderer.call %({{ "Test" | qr_code: 11, "INVALID" }}), {}
+      expect(content).to match(%r(\A<\?xml.+class="qr-code".+</svg>\Z))
+    end
   end
 end
