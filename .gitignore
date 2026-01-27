@@ -1,3 +1,6 @@
+*.gem
+.bundle
+.DS_Store
 /.bundle/
 /.yardoc
 /_yardoc/
@@ -6,5 +9,4 @@
 /pkg/
 /spec/reports/
 /tmp/
-.DS_Store
-*.gem
+Gemfile.lock
