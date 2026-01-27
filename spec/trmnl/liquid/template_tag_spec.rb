@@ -1,50 +1,46 @@
-require 'trmnl/liquid'
+# frozen_string_literal: true
 
-describe TRMNL::Liquid::TemplateTag do
-  let(:service) { ::Liquid::Template }
+require "spec_helper"
+
+RSpec.describe TRMNL::Liquid::TemplateTag do
+  subject :renderer do
+    -> template, data { Liquid::Template.parse(template, environment:).render data }
+  end
+
   let(:environment) { TRMNL::Liquid.build_environment }
-  let(:vars) { {} }
 
-  context 'with an invalid template name' do
-    let(:content) { '{% template omg!!! %}Hello, world!{% endtemplate %}' }
-
-    it 'renders an error message' do
-      expect_render('Liquid error: invalid template name "omg!!!" - template names must contain only letters, numbers, underscores, and slashes')
-    end
-  end
-
-  context 'with a valid template' do
-    let(:content) { 'abc {% template my_template %}Hello, {{ name }}{% endtemplate %} 123' }
-
-    it 'strips out template contents' do
-      expect_render('abc  123')
-    end
-  end
-
-  context 'calling an undefined template' do
-    let(:content) { '{% render "oh_no" %}' }
-
-    it 'renders an error message' do
-      expect_render('Liquid error: Template not found: oh_no')
-    end
-  end
-
-  context 'calling a defined template' do
-    let(:vars) { { 'name' => 'George' } }
-    let(:content) do
-      <<~LIQUID
+  describe "#render" do
+    it "answers content for registered template" do
+      template = <<~LIQUID
         {% template my_template %}Hello, {{ name }}{% endtemplate %}
         {% render 'my_template', name: 'world' %}
         {% render 'my_template', name: name %}
       LIQUID
+
+      content = renderer.call template, {"name" => "George"}
+
+      expect(content.strip).to eq("Hello, world\nHello, George")
     end
 
-    it 'renders the template' do
-      expect_render("Hello, world\nHello, George")
-    end
-  end
+    it "answers content with template contents stripped" do
+      template = "abc {% template my_template %}Hello, {{ name }}{% endtemplate %} 123"
+      content = renderer.call template, {}
 
-  def expect_render(output)
-    expect(service.parse(content, environment: environment).render(vars).strip).to eq(output.strip)
+      expect(content).to eq("abc  123")
+    end
+
+    it "answers error with invalid template name" do
+      content = renderer.call "{% template Danger! %}Hello, world!{% endtemplate %}", {}
+
+      expect(content).to eq(
+        %(Liquid error: invalid template name "Danger!" - template names must contain only ) +
+        %(letters, numbers, underscores, and slashes)
+      )
+    end
+
+    it "answers error for undefined template" do
+      content = renderer.call %({% render "bogus" %}), {}
+      expect(content).to eq("Liquid error: Template not found: bogus")
+    end
   end
 end
