@@ -1,11 +1,6 @@
 name: RSpec (tests)
 
-on:
-  push:
-    branches:
-      - main
-
-  pull_request:
+on: push
 
 jobs:
   build:
@@ -14,7 +9,7 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - '3.4.2'
+          - '4.0'
 
     steps:
       - uses: actions/checkout@v4
