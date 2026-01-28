@@ -29,4 +29,24 @@ RSpec.describe TRMNL::Liquid do
       expect(capture).to be_a(Liquid::Environment)
     end
   end
+
+  describe ".load" do
+    it "loads TRMNL i18n gem locales" do
+      expect(described_class.load(:rails)).to include(%r(trmnl/i18n/locales))
+    end
+
+    it "loads Rails i18n gem locales" do
+      paths = described_class.load(:rails).map(&:to_s)
+      expect(paths).to include(%r(rails/locale))
+    end
+
+    it "fails with invalid key" do
+      expectation = proc { described_class.load :bogus }
+
+      expect(&expectation).to raise_error(
+        KeyError,
+        "Unable to load extension due to invalid key: :bogus."
+      )
+    end
+  end
 end
