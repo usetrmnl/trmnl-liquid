@@ -13,12 +13,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Ruby
+      - name: Ruby Setup
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - name: Run the default task
+      - name: Rake
         run: bundle exec rake
-      - name: Run RSpec
-        run: bundle exec rspec spec
