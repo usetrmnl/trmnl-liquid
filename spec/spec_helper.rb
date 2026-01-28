@@ -41,5 +41,7 @@ RSpec.configure do |config|
     mocks.verify_partial_doubles = true
   end
 
+  config.before(:suite) { TRMNL::Liquid.load :rails }
+
   Kernel.srand config.seed
 end

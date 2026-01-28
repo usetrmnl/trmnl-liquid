@@ -9,17 +9,6 @@ require "tzinfo"
 
 require_relative "fallback"
 
-# optional
-%w[
-  i18n
-  action_view
-  active_support/core_ext/integer/inflections
-].each do |lib|
-  require lib
-rescue LoadError
-  nil
-end
-
 module TRMNL
   module Liquid
     module Filters
@@ -48,8 +37,8 @@ module TRMNL
       end
 
       def number_with_delimiter number, delimiter = ",", separator = "."
-        if helpers.respond_to? :number_with_delimiter
-          helpers.number_with_delimiter number, delimiter: delimiter, separator: separator
+        if RailsHelpers.respond_to? :number_with_delimiter
+          RailsHelpers.number_with_delimiter number, delimiter: delimiter, separator: separator
         else
           Fallback.number_with_delimiter number, delimiter, separator
         end
@@ -60,12 +49,12 @@ module TRMNL
                              delimiter = ",",
                              separator = ".",
                              precision = 2
-        if helpers.respond_to? :number_to_currency
+        if RailsHelpers.respond_to? :number_to_currency
           cur_switcher = with_i18n :unit do |i18n|
             i18n.available_locales.include?(unit_or_locale.to_sym) ? :locale : :unit
           end
           opts = {delimiter:, separator:, precision:}.merge cur_switcher => unit_or_locale
-          helpers.number_to_currency(number, **opts)
+          RailsHelpers.number_to_currency(number, **opts)
         else
           Fallback.number_to_currency number, unit_or_locale, delimiter, separator, precision
         end
@@ -92,8 +81,8 @@ module TRMNL
         plural = opts["plural"]
         locale = opts["locale"] || with_i18n(nil) { |i18n| i18n.locale } || "en"
 
-        if helpers.respond_to? :pluralize
-          helpers.pluralize count, singular, plural: plural, locale: locale
+        if RailsHelpers.respond_to? :pluralize
+          RailsHelpers.pluralize count, singular, plural: plural, locale: locale
         else
           Fallback.pluralize count, singular, plural
         end
@@ -205,21 +194,6 @@ module TRMNL
         # Parse what remained after extracting the left operand and the `:comparison` operator
         # and initialize a Liquid::Condition object using the operands and the comparison-operator
         ::Liquid::Condition.new left_operand, operator, ::Liquid::Expression.parse(parser.expression)
-      end
-
-      class Helpers
-        %w[
-          ::ActionView::Helpers::TextHelper
-          ::ActionView::Helpers::NumberHelper
-        ].each do |name|
-          include Object.const_get(name)
-        rescue NameError
-          next
-        end
-      end
-
-      def helpers
-        @helpers ||= Helpers.new
       end
     end
   end
