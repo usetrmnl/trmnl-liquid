@@ -91,10 +91,16 @@ RSpec.describe TRMNL::Liquid::Filters do
 
   describe "#markdown_to_html" do
     it "answers HTML" do
-      markdown = "This is a *test* and [here's a {{ adjective }} link](https://test.io)."
-      content = renderer.call markdown, {"adjective" => "test"}
+      template = <<~BODY
+        {% assign markdown = "This is a *test* and [here's a link](https://test.io)." %}
+        {{ markdown | markdown_to_html }}
+      BODY
 
-      expect(content).to eq("This is a *test* and [here's a test link](https://test.io).")
+      content = renderer.call template, {"adjective" => "test"}
+
+      expect(content.strip).to eq(
+        %(<p>This is a <em>test</em> and <a href="https://test.io">here&#39;s a link</a>.</p>)
+      )
     end
 
     it "answers empty string when given no content" do
@@ -160,12 +166,17 @@ RSpec.describe TRMNL::Liquid::Filters do
   end
 
   describe "#l_date" do
-    it "answers day and short month" do
+    it "answers short year and month" do
       content = renderer.call %({{ "2025-01-11" | l_date: "%y %b" }}), {}
       expect(content).to eq("25 Jan")
     end
 
-    it "answers day and short month with Korean translation" do
+    it "answers time using locale key" do
+      content = renderer.call %({{ "2025-01-11T10:15" | l_date: "shorter" }}), {}
+      expect(content).to eq("10:15 AM")
+    end
+
+    it "answers short year and month with Korean translation" do
       content = renderer.call %({{ "2025-01-11" | l_date: "%y %b", "ko" }}), {}
       expect(content).to eq("25 1월")
     end
@@ -256,6 +267,14 @@ RSpec.describe TRMNL::Liquid::Filters do
       expect(content).to eq("test")
     end
 
+    it "answers content which matches or condition" do
+      template = %({{ towns | where_exp: "town", "town.label == 'Boulder' or town.id < 2" }})
+      data = {"towns" => [{"id" => 1, "label" => "Boulder"}, {"id" => 2, "label" => "Bozeman"}]}
+      content = renderer.call template, data
+
+      expect(content.strip).to eq(%({"id"=>1, "label"=>"Boulder"}))
+    end
+
     it "answers content which matches equation" do
       template = <<~BODY
         {% assign nums = "1,2,3,4,5" | split: "," | map_to_i %}
@@ -287,8 +306,13 @@ RSpec.describe TRMNL::Liquid::Filters do
       expect(content).to match(%r(\A<\?xml.+class="qr-code".+</svg>\Z))
     end
 
-    it "answers SVG for size and level" do
-      content = renderer.call %({{ "Test" | qr_code: 11, "INVALID" }}), {}
+    it "answers SVG for size and 7% level" do
+      content = renderer.call %({{ "Test" | qr_code: 11, "l" }}), {}
+      expect(content).to match(%r(\A<\?xml.+class="qr-code".+</svg>\Z))
+    end
+
+    it "answers SVG for size and invalid level" do
+      content = renderer.call %({{ "Test" | qr_code: 11, "BOGUS" }}), {}
       expect(content).to match(%r(\A<\?xml.+class="qr-code".+</svg>\Z))
     end
   end

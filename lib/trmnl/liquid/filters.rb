@@ -104,8 +104,8 @@ module TRMNL
         return input unless input.respond_to? :select
 
         input = input.values if input.is_a? Hash
-
         condition = parse_condition expression
+
         @context.stack do
           input.select do |object|
             @context[variable] = object
