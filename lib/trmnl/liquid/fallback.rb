@@ -6,6 +6,7 @@ module TRMNL
     module Fallback
       module_function
 
+      # :reek:TooManyStatements
       # rubocop:todo Metrics/MethodLength
       def number_with_delimiter number, delimiter, separator
         value = number.to_s
@@ -42,6 +43,7 @@ module TRMNL
       end
       # rubocop:enable Metrics/ParameterLists
 
+      # :reek:TooManyStatements
       def ordinalize number
         return "#{number}th" if (11..13).cover? number % 100
 

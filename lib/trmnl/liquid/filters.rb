@@ -22,6 +22,7 @@ module TRMNL
 
       def group_by(collection, key) = collection.group_by { it[key] }
 
+      # :reek:ControlParameter
       # rubocop:todo Metrics/ParameterLists
       def find_by collection, key, value, fallback = nil
         collection.find { |obj| obj[key] == value } || fallback
@@ -43,6 +44,7 @@ module TRMNL
         end
       end
 
+      # :reek:TooManyStatements
       # rubocop:todo Metrics/ParameterLists
       def number_to_currency number,
                              unit_or_locale = "$",
@@ -76,6 +78,7 @@ module TRMNL
 
       def map_to_i(collection) = collection.map(&:to_i)
 
+      # :reek:FeatureEnvy
       # rubocop:todo Style/OptionHash
       def pluralize singular, count, options = {}
         plural = options["plural"]
@@ -95,6 +98,7 @@ module TRMNL
 
       def sample(array) = array.sample
 
+      # :reek:TooManyStatements
       # source: https://github.com/jekyll/jekyll/blob/40ac06ed3e95325a07868dd2ac419e409af823b6/lib/jekyll/filters.rb#L209
       def where_exp input, variable, expression
         return input unless input.respond_to? :select
@@ -112,12 +116,8 @@ module TRMNL
 
       def ordinalize date_str, strftime_exp
         date = Date.parse date_str
-
-        ordinal_day = if date.day.respond_to? :ordinalize
-                        date.day.ordinalize
-                      else
-                        Fallback.ordinalize date.day
-                      end
+        day = date.day
+        ordinal_day = day.respond_to?(:ordinalize) ? day.ordinalize : Fallback.ordinalize(day)
 
         date.strftime strftime_exp.gsub("<<ordinal_day>>", ordinal_day)
       end
@@ -168,6 +168,8 @@ module TRMNL
         condition
       end
 
+      # :reek:TooManyStatements
+      # :reek:DuplicateMethodCall
       def parse_binary_comparison parser
         condition = parse_comparison parser
         first_condition = condition
@@ -181,6 +183,7 @@ module TRMNL
         first_condition
       end
 
+      # :reek:DuplicateMethodCall
       def parse_comparison parser
         left_operand = ::Liquid::Expression.parse parser.expression
         operator     = parser.consume? :comparison
