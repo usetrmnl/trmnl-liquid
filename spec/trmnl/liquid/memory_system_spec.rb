@@ -13,7 +13,7 @@ RSpec.describe TRMNL::Liquid::MemorySystem do
 
   describe "#read_template_file" do
     it "reads template" do
-      system.register("test", "A body.")
+      system.register "test", "A body."
       expect(system.read_template_file("test")).to eq("A body.")
     end
 
