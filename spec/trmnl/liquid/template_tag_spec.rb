@@ -7,7 +7,7 @@ RSpec.describe TRMNL::Liquid::TemplateTag do
     -> template, data { Liquid::Template.parse(template, environment:).render data }
   end
 
-  let(:environment) { TRMNL::Liquid.build_environment }
+  let(:environment) { TRMNL::Liquid.new }
 
   describe "#render" do
     it "answers content for registered template" do
@@ -40,7 +40,7 @@ RSpec.describe TRMNL::Liquid::TemplateTag do
 
     it "answers error for undefined template" do
       content = renderer.call %({% render "bogus" %}), {}
-      expect(content).to eq("Liquid error: Template not found: bogus")
+      expect(content).to eq("Liquid error: Template not found: bogus.")
     end
   end
 end
