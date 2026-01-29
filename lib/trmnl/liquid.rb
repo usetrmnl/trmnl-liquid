@@ -6,12 +6,14 @@ require "trmnl/liquid/memory_system"
 require "trmnl/liquid/template_tag"
 
 module TRMNL
+  # Main namespace.
   module Liquid
     def self.build_environment(...)
       warn "`#{self.class}##{__method__}` is deprecated, use `new` instead.", category: :deprecated
       new(...)
     end
 
+    # :reek:TooManyStatements
     def self.load key
       case key
         when :rails
