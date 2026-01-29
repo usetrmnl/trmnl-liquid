@@ -51,7 +51,8 @@ RSpec.describe TRMNL::Liquid::Filters do
                               }
 
       expect(content).to eq(
-        '{35=>[{"name"=>"Ryan", "age"=>35}], 29=>[{"name"=>"Sara", "age"=>29}, {"name"=>"Jimbob", "age"=>29}]}'
+        %({35=>[{"name"=>"Ryan", "age"=>35}], 29=>[{"name"=>"Sara", "age"=>29}, ) +
+        %({"name"=>"Jimbob", "age"=>29}]})
       )
     end
   end
@@ -273,8 +274,9 @@ RSpec.describe TRMNL::Liquid::Filters do
     end
 
     it "asnwers day (long), month, and data (short)" do
-      content = renderer.call %({{ "2025-12-31 16:50:38 -0400" | ordinalize: "%A, %b <<ordinal_day>>" }}),
-                              {}
+      template = %({{ "2025-12-31 16:50:38 -0400" | ordinalize: "%A, %b <<ordinal_day>>" }})
+      content = renderer.call template, {}
+
       expect(content).to eq("Wednesday, Dec 31st")
     end
   end

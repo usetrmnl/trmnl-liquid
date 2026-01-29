@@ -14,6 +14,4 @@ RuboCop::RakeTask.new
 desc "Run code quality checks"
 task quality: %i[git_lint reek rubocop]
 
-# TODO: Replace once code quality is fixed.
-# task default: %i[quality spec]
-task default: %i[spec]
+task default: %i[quality spec]
