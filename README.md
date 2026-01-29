@@ -1,10 +1,10 @@
-# TRMNL-Flavored Liquid Templates
+# TRMNL Liquid
 
 A set of Liquid filters and tags used to render custom plugins for [TRMNL](https://usetrmnl.com).
 
 ## Usage
 
-Functionality is achieved by parsing a template with the option `{ environment: TRMNL::Liquid.build_environment }`.
+Functionality is achieved by parsing a template with the option `{ environment: TRMNL::Liquid.new }`.
 
 The environment concept was introduced in [v5.6.0](https://github.com/Shopify/liquid/releases/tag/v5.6.0) of the  `liquid` gem as a safer alternative to global registration of tags, filters, and so on.
 
@@ -14,7 +14,7 @@ See [lib/trmnl/liquid/filters.rb](lib/trmnl/liquid/filters.rb) for the currently
 require 'trmnl/liquid'
 
 markup = "Hello {{ count | number_with_delimiter }} people!"
-environment = TRMNL::Liquid.build_environment # same arguments as Liquid::Environment.build
+environment = TRMNL::Liquid.new # same arguments as Liquid::Environment.build
 template = Liquid::Template.parse(markup, environment: environment)
 rendered = template.render(count: 1337)
 # => "Hello 1,337 people!"

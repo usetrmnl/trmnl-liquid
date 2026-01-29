@@ -7,7 +7,7 @@ RSpec.describe TRMNL::Liquid::TemplateTag do
     -> template, data { Liquid::Template.parse(template, environment:).render data }
   end
 
-  let(:environment) { TRMNL::Liquid.build_environment }
+  let(:environment) { TRMNL::Liquid.new }
 
   describe "#render" do
     it "answers content for registered template" do

@@ -7,7 +7,7 @@ RSpec.describe TRMNL::Liquid::Filters do
     -> template, data { Liquid::Template.parse(template, environment:).render data }
   end
 
-  let(:environment) { TRMNL::Liquid.build_environment }
+  let(:environment) { TRMNL::Liquid.new }
 
   describe "#append_random" do
     it "appends random number" do
