@@ -6,7 +6,7 @@ RSpec.describe TRMNL::Liquid do
   describe ".build_environment" do
     it "builds with defaults" do
       expect(described_class.build_environment).to have_attributes(
-        file_system: be_a(TRMNL::Liquid::FileSystem),
+        file_system: be_a(TRMNL::Liquid::MemorySystem),
         error_mode: :lax,
         tags: hash_including("template" => TRMNL::Liquid::TemplateTag)
       )
