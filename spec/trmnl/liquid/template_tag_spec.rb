@@ -40,7 +40,7 @@ RSpec.describe TRMNL::Liquid::TemplateTag do
 
     it "answers error for undefined template" do
       content = renderer.call %({% render "bogus" %}), {}
-      expect(content).to eq("Liquid error: Template not found: bogus")
+      expect(content).to eq("Liquid error: Template not found: bogus.")
     end
   end
 end

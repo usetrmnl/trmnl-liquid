@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require "liquid"
-require "trmnl/liquid/file_system"
 require "trmnl/liquid/filters"
+require "trmnl/liquid/memory_system"
 require "trmnl/liquid/template_tag"
 
 module TRMNL
   module Liquid
-    def self.build_environment(file_system: TRMNL::Liquid::FileSystem.new, **)
+    def self.build_environment(file_system: TRMNL::Liquid::MemorySystem.new, **)
       ::Liquid::Environment.build(file_system:, **) do |environment|
         environment.register_filter TRMNL::Liquid::Filters
         environment.register_tag "template", TRMNL::Liquid::TemplateTag
