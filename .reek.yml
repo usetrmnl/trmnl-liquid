@@ -1,0 +1,13 @@
+exclude_paths:
+  - tmp
+  - vendor
+
+detectors:
+  LongParameterList:
+    enabled: false
+  ManualDispatch:
+    exclude:
+      - TRMNL::Liquid::Filters
+  UtilityFunction:
+    exclude:
+      - TRMNL::Liquid::Filters
