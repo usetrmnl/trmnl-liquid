@@ -24,6 +24,11 @@ RSpec.describe TRMNL::Liquid::Filters do
       expect(content).to eq((Date.today - 3).to_s)
     end
 
+    it "renders with custom time zone" do
+      content = renderer.call %({{ 10 | days_ago: "Europe/London" }}), {}
+      expect(content).to eq((Date.today - 10).to_s)
+    end
+
     it "renders custom format" do
       content = renderer.call %({{ 5 | days_ago | date: "%b %d, %Y" }}), {}
       expect(content).to eq((Date.today - 5).strftime("%b %d, %Y"))
