@@ -6,13 +6,14 @@ module TRMNL
     module Fallback
       module_function
 
+      # rubocop:todo Metrics/MethodLength
       def number_with_delimiter number, delimiter, separator
-        str = number.to_s
+        value = number.to_s
 
         # return early if it's not a simple numeric-like string
-        return str unless str.match?(/\A-?\d+(\.\d+)?\z/)
+        return value unless value.match?(/\A-?\d+(\.\d+)?\z/)
 
-        integer, fractional = str.split "."
+        integer, fractional = value.split "."
         negative = integer.start_with? "-"
         integer = integer[1..] if negative
 
@@ -25,7 +26,9 @@ module TRMNL
           integer_with_delimiters
         end
       end
+      # rubocop:enable Metrics/MethodLength
 
+      # rubocop:disable Metrics/ParameterLists
       def number_to_currency number, unit, delimiter, separator, precision
         result = number_with_delimiter number, delimiter, separator
         dollars, cents = result.split separator
@@ -37,17 +40,16 @@ module TRMNL
           "#{unit}#{dollars}#{separator}#{cents}"
         end
       end
+      # rubocop:enable Metrics/ParameterLists
 
       def ordinalize number
-        suffix = if (11..13).include? number % 100
-                   "th"
-                 else
-                   case number % 10
-                     when 1 then "st"
-                     when 2 then "nd"
-                     when 3 then "rd"
-                     else "th"
-                   end
+        return "#{number}th" if (11..13).cover? number % 100
+
+        suffix = case number % 10
+                   when 1 then "st"
+                   when 2 then "nd"
+                   when 3 then "rd"
+                   else "th"
                  end
 
         "#{number}#{suffix}"

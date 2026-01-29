@@ -11,23 +11,22 @@ require_relative "fallback"
 
 module TRMNL
   module Liquid
+    # rubocop:todo Metrics/ModuleLength
     module Filters
-      def append_random var
-        "#{var}#{SecureRandom.hex 2}"
-      end
+      def append_random(value) = "#{value}#{SecureRandom.hex 2}"
 
-      def days_ago num, tz = "Etc/UTC"
-        tzinfo = TZInfo::Timezone.get tz
+      def days_ago num, timezone = "Etc/UTC"
+        tzinfo = TZInfo::Timezone.get timezone
         tzinfo.now.to_date - num.to_i
       end
 
-      def group_by collection, key
-        collection.group_by { |obj| obj[key] }
-      end
+      def group_by(collection, key) = collection.group_by { it[key] }
 
+      # rubocop:todo Metrics/ParameterLists
       def find_by collection, key, value, fallback = nil
         collection.find { |obj| obj[key] == value } || fallback
       end
+      # rubocop:enable Metrics/ParameterLists
 
       def markdown_to_html markdown
         markdown ||= ""
@@ -44,6 +43,7 @@ module TRMNL
         end
       end
 
+      # rubocop:todo Metrics/ParameterLists
       def number_to_currency number,
                              unit_or_locale = "$",
                              delimiter = ",",
@@ -59,6 +59,7 @@ module TRMNL
           Fallback.number_to_currency number, unit_or_locale, delimiter, separator, precision
         end
       end
+      # rubocop:enable Metrics/ParameterLists
 
       def l_word word, locale
         with_i18n "custom_plugins.#{word}" do |i18n|
@@ -73,13 +74,12 @@ module TRMNL
         end
       end
 
-      def map_to_i collection
-        collection.map(&:to_i)
-      end
+      def map_to_i(collection) = collection.map(&:to_i)
 
-      def pluralize singular, count, opts = {}
-        plural = opts["plural"]
-        locale = opts["locale"] || with_i18n(nil) { |i18n| i18n.locale } || "en"
+      # rubocop:todo Style/OptionHash
+      def pluralize singular, count, options = {}
+        plural = options["plural"]
+        locale = options["locale"] || with_i18n(nil, &:locale) || "en"
 
         if RailsHelpers.respond_to? :pluralize
           RailsHelpers.pluralize count, singular, plural: plural, locale: locale
@@ -87,14 +87,11 @@ module TRMNL
           Fallback.pluralize count, singular, plural
         end
       end
+      # rubocop:enable Style/OptionHash
 
-      def json obj
-        JSON.generate obj
-      end
+      def json(value) = JSON.generate value
 
-      def parse_json obj
-        JSON.parse obj
-      end
+      def parse_json(value) = JSON.parse value
 
       def sample(array) = array.sample
 
@@ -125,6 +122,7 @@ module TRMNL
         date.strftime strftime_exp.gsub("<<ordinal_day>>", ordinal_day)
       end
 
+      # rubocop:todo Metrics/MethodLength
       def qr_code data, size = 11, level = ""
         level = "h" unless %w[l m q h].include? level.downcase
 
@@ -141,6 +139,7 @@ module TRMNL
           }
         )
       end
+      # rubocop:enable Metrics/MethodLength
 
       private
 
@@ -152,21 +151,17 @@ module TRMNL
         end
       end
 
-      def to_datetime obj
-        case obj
-          when DateTime
-            obj
-          when Date
-            obj.to_datetime
-          when Time
-            DateTime.parse(obj.iso8601)
-          else
-            DateTime.parse obj.to_s
+      def to_datetime value
+        case value
+          when DateTime then value
+          when Date then value.to_datetime
+          when Time then DateTime.parse(value.iso8601)
+          else DateTime.parse value.to_s
         end
       end
 
-      def parse_condition exp
-        parser = ::Liquid::Parser.new exp
+      def parse_condition expression
+        parser = ::Liquid::Parser.new expression
         condition = parse_binary_comparison parser
 
         parser.consume :end_of_string
@@ -176,11 +171,13 @@ module TRMNL
       def parse_binary_comparison parser
         condition = parse_comparison parser
         first_condition = condition
+
         while (binary_operator = parser.id?("and") || parser.id?("or"))
           child_condition = parse_comparison parser
-          condition.send binary_operator, child_condition
+          condition.public_send binary_operator, child_condition
           condition = child_condition
         end
+
         first_condition
       end
 
@@ -196,5 +193,6 @@ module TRMNL
         ::Liquid::Condition.new left_operand, operator, ::Liquid::Expression.parse(parser.expression)
       end
     end
+    # rubocop:enable Metrics/ModuleLength
   end
 end
