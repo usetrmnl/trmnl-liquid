@@ -24,6 +24,11 @@ RSpec.describe TRMNL::Liquid::Filters do
       expect(content).to eq((Date.today - 3).to_s)
     end
 
+    it "renders with custom time zone" do
+      content = renderer.call %({{ 10 | days_ago: "Europe/London" }}), {}
+      expect(content).to eq((Date.today - 10).to_s)
+    end
+
     it "renders custom format" do
       content = renderer.call %({{ 5 | days_ago | date: "%b %d, %Y" }}), {}
       expect(content).to eq((Date.today - 5).strftime("%b %d, %Y"))
@@ -166,6 +171,11 @@ RSpec.describe TRMNL::Liquid::Filters do
   end
 
   describe "#l_date" do
+    it "answers UNIX timestamp as date/time" do
+      content = renderer.call %({{ 1770134949 | l_date: "%Y %b" }}), {}
+      expect(content).to eq("2026 Feb")
+    end
+
     it "answers short year and month" do
       content = renderer.call %({{ "2025-01-11" | l_date: "%y %b" }}), {}
       expect(content).to eq("25 Jan")
@@ -287,6 +297,11 @@ RSpec.describe TRMNL::Liquid::Filters do
   end
 
   describe "#ordinalize" do
+    it "answers UNIX timestamp as date/time" do
+      content = renderer.call %({{ 1770134949 | ordinalize: "%A, %B <<ordinal_day>>, %Y" }}), {}
+      expect(content).to eq("Tuesday, February 3rd, 2026")
+    end
+
     it "asnwers day (long), month, day (short), and year" do
       content = renderer.call %({{ "2025-10-02" | ordinalize: "%A, %B <<ordinal_day>>, %Y" }}), {}
       expect(content).to eq("Thursday, October 2nd, 2025")

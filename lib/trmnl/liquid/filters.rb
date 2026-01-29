@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require "date"
 require "json"
 require "redcarpet"
 require "rqrcode"
@@ -15,9 +14,8 @@ module TRMNL
     module Filters
       def append_random(value) = "#{value}#{SecureRandom.hex 2}"
 
-      def days_ago num, timezone = "Etc/UTC"
-        tzinfo = TZInfo::Timezone.get timezone
-        tzinfo.now.to_date - num.to_i
+      def days_ago value, timezone = "Etc/UTC"
+        TZInfo::Timezone.get(timezone).now.to_date - value.to_i
       end
 
       def group_by(collection, key) = collection.group_by { it[key] }
@@ -64,15 +62,14 @@ module TRMNL
       # rubocop:enable Metrics/ParameterLists
 
       def l_word word, locale
-        with_i18n "custom_plugins.#{word}" do |i18n|
-          i18n.t "custom_plugins.#{word}", locale: locale
-        end
+        with_i18n("custom_plugins.#{word}") { |i18n| i18n.t "custom_plugins.#{word}", locale: }
       end
 
-      def l_date date, format, locale = "en"
-        with_i18n date.to_s do |i18n|
+      # :reek:FeatureEnvy
+      def l_date value, format, locale = "en"
+        with_i18n value.to_s do |i18n|
           format = format.to_sym unless format.include? "%"
-          i18n.l to_datetime(date), format: format, locale: locale
+          i18n.l to_time(value), format:, locale:
         end
       end
 
@@ -114,12 +111,13 @@ module TRMNL
         end || []
       end
 
-      def ordinalize date_str, strftime_exp
-        date = Date.parse date_str
-        day = date.day
+      # :reek:FeatureEnvy
+      def ordinalize value, strftime_format
+        time = to_time value
+        day = time.day
         ordinal_day = day.respond_to?(:ordinalize) ? day.ordinalize : Fallback.ordinalize(day)
 
-        date.strftime strftime_exp.gsub("<<ordinal_day>>", ordinal_day)
+        time.strftime strftime_format.gsub("<<ordinal_day>>", ordinal_day)
       end
 
       # rubocop:todo Metrics/MethodLength
@@ -151,12 +149,10 @@ module TRMNL
         end
       end
 
-      def to_datetime value
+      def to_time value
         case value
-          when DateTime then value
-          when Date then value.to_datetime
-          when Time then DateTime.parse(value.iso8601)
-          else DateTime.parse value.to_s
+          when Integer then Time.at(value)
+          else Time.parse value
         end
       end
 
