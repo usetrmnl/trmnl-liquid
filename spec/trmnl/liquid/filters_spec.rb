@@ -290,4 +290,87 @@ RSpec.describe TRMNL::Liquid::Filters do
       expect(content).to match(%r(\A<\?xml.+class="qr-code".+</svg>\Z))
     end
   end
+
+  describe 'relative_time' do
+    def expect_render(template, expected) = expect(renderer.call(template, {})).to eq(expected)
+
+    it 'returns just now for recent timestamps' do
+      now = DateTime.parse('2025-12-31 12:00:00')
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      expect_render('{{ "2025-12-31 11:59:30" | relative_time }}', 'just now')
+    end
+    
+    it 'shows time ago for past dates' do
+      now = DateTime.parse('2025-12-31 12:00:00')
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      expect_render('{{ "2025-12-31 11:00:00" | relative_time }}', '1 hour ago')
+      expect_render('{{ "2025-12-31 10:00:00" | relative_time }}', '2 hours ago')
+      expect_render('{{ "2025-12-30 12:00:00" | relative_time }}', '1 day ago')
+      expect_render('{{ "2025-12-24 12:00:00" | relative_time }}', '1 week ago')
+    end
+    
+    it 'returns relative time for future dates' do
+      now = DateTime.parse('2025-12-31 12:00:00')
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      expect_render('{{ "2025-12-31 13:30:00" | relative_time }}', 'in 1 hour')
+      expect_render('{{ "2026-01-01 12:00:00" | relative_time }}', 'in 1 day')
+      expect_render('{{ "2026-01-07 12:00:00" | relative_time }}', 'in 1 week')
+    end
+    
+    it 'works with custom base date time' do
+      expect_render('{{ "2025-12-25 12:00:00" | relative_time: "2025-12-31 12:00:00" }}', '6 days ago')
+    end
+    
+    it 'handles months and years' do
+      now = DateTime.parse('2025-12-31 12:00:00')
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      expect_render('{{ "2024-12-31 12:00:00" | relative_time }}', '1 year ago')
+      expect_render('{{ "2025-11-30 12:00:00" | relative_time }}', '1 month ago')
+    end
+    
+    it 'supports i18n when translations are available' do
+      skip 'I18n not available' unless defined?(::I18n)
+      
+      now = DateTime.parse('2026-01-02 12:00:00')
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      # Use the store_translations helper for a much cleaner test
+      I18n.backend.store_translations(:es, {
+        custom_plugins: {
+          relative_time: {
+            just_now: "ahora mismo",
+            past: {
+              day: { one: "1 día hace", other: "%{count} días hace" }
+            },
+            future: {
+              day: { one: "en 1 día", other: "en %{count} días" }
+            }
+          }
+        }
+      })
+      
+      expect_render('{{ "2025-12-31 12:00:00" | relative_time: nil, "es" }}', '2 días hace')
+      expect_render('{{ "2026-01-03 12:00:00" | relative_time: nil, "es" }}', 'en 1 día')
+      expect_render('{{ "2026-01-02 11:59:30" | relative_time: nil, "es" }}', 'ahora mismo')
+    end
+
+    it 'falls back to English when translations are not available' do
+      skip 'I18n not available' unless defined?(::I18n)
+      
+      now = DateTime.parse('2026-01-02 12:00:00')
+      allow(DateTime).to receive(:now).and_return(now)
+      
+      # Test fallback to default English string for a locale with no data (de)
+      expect_render('{{ "2025-12-31 12:00:00" | relative_time: nil, "de" }}', '2 days ago')
+      expect_render('{{ "2026-01-03 12:00:00" | relative_time: nil, "de" }}', 'in 1 day')
+      expect_render('{{ "2026-01-02 11:59:30" | relative_time: nil, "de" }}', 'just now')
+    end
+  end
+
+
+
 end

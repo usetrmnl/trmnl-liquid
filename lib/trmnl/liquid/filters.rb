@@ -125,8 +125,58 @@ module TRMNL
         date.strftime strftime_exp.gsub("<<ordinal_day>>", ordinal_day)
       end
 
-      def qr_code data, size = 11, level = ""
-        level = "h" unless %w[l m q h].include? level.downcase
+      def relative_time(date_str, from_date = nil, locale = 'en')
+        target = to_datetime(date_str)
+        base = from_date ? to_datetime(from_date) : DateTime.now
+        seconds_diff = ((base - target) * 24 * 60 * 60).to_i
+
+        if seconds_diff.abs < 60
+          return with_i18n(nil) { |i| i.t("custom_plugins.relative_time.just_now", locale: locale, default: "just now") }
+        end
+
+        is_future = seconds_diff < 0
+        seconds_diff = seconds_diff.abs
+
+        intervals = [
+          ['year', 31_536_000], ['month', 2_592_000], ['week', 604_800],
+          ['day', 86_400], ['hour', 3600], ['minute', 60]
+        ]
+
+        interval_name, interval_seconds = intervals.find { |_, s| seconds_diff >= s }
+        count = (seconds_diff / interval_seconds).floor
+        state = is_future ? 'future' : 'past'
+
+        with_i18n(nil) do |i18n|
+          i18n.t(
+            "custom_plugins.relative_time.#{state}.#{interval_name}",
+            count: count,
+            locale: locale,
+            default: default_relative_string(count, interval_name, is_future)
+          )
+        end
+      end
+
+      private
+
+      def default_relative_string(count, unit, is_future)
+        phrase = count == 1 ? "1 #{unit}" : "#{count} #{unit}s"
+        is_future ? "in #{phrase}" : "#{phrase} ago"
+      end
+
+      private
+
+      def default_relative_string(count, unit, is_future)
+        phrase = count == 1 ? "1 #{unit}" : "#{count} #{unit}s"
+        is_future ? "in #{phrase}" : "#{phrase} ago"
+      end
+
+
+
+
+
+      def qr_code(data, size = 11, level = '')
+        level.downcase!
+        level = 'h' unless %w[l m q h].include?(level)
 
         qrcode = RQRCode::QRCode.new(data, level:)
         qrcode.as_svg(
@@ -153,6 +203,8 @@ module TRMNL
       end
 
       def to_datetime obj
+        return DateTime.now if obj == 'now'
+
         case obj
           when DateTime
             obj
