@@ -171,6 +171,16 @@ RSpec.describe TRMNL::Liquid::Filters do
   end
 
   describe "#l_date" do
+    it "answers now as date/time" do
+      content = renderer.call %({{ "now" | l_date: "%Y-%m-%d" }}), {}
+      expect(content).to match(/\d{4}-\d{2}-\d{2}/)
+    end
+
+    it "answers today as date/time" do
+      content = renderer.call %({{ "today" | l_date: "%Y-%m-%d" }}), {}
+      expect(content).to match(/\d{4}-\d{2}-\d{2}/)
+    end
+
     it "answers UNIX timestamp as date/time" do
       content = renderer.call %({{ 1770134949 | l_date: "%Y %b" }}), {}
       expect(content).to eq("2026 Feb")
@@ -297,6 +307,16 @@ RSpec.describe TRMNL::Liquid::Filters do
   end
 
   describe "#ordinalize" do
+    it "answers now as date/time" do
+      content = renderer.call %({{ "now" | ordinalize: "%B <<ordinal_day>>" }}), {}
+      expect(content).to match(/[a-zA-Z]+ \d+[a-z]{2}/)
+    end
+
+    it "answers today as date/time" do
+      content = renderer.call %({{ "today" | ordinalize: "%B <<ordinal_day>>" }}), {}
+      expect(content).to match(/[a-zA-Z]+ \d+[a-z]{2}/)
+    end
+
     it "answers UNIX timestamp as date/time" do
       content = renderer.call %({{ 1770134949 | ordinalize: "%A, %B <<ordinal_day>>, %Y" }}), {}
       expect(content).to eq("Tuesday, February 3rd, 2026")

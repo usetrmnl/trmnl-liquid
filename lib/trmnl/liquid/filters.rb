@@ -151,6 +151,7 @@ module TRMNL
 
       def to_time value
         case value
+          when "now", "today" then Time.now
           when Integer then Time.at(value)
           else Time.parse value
         end
