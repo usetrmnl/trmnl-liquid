@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |spec|
   spec.name = "trmnl-liquid"
-  spec.version = "0.4.0"
+  spec.version = "0.5.0"
   spec.authors = ["TRMNL"]
   spec.email = ["engineering@trmnl.com"]
   spec.homepage = "https://github.com/usetrmnl/trmnl-liquid"
