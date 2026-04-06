@@ -3,44 +3,6 @@
 require "spec_helper"
 
 RSpec.describe TRMNL::Liquid do
-  shared_examples "an initializer" do |method|
-    it "builds with defaults" do
-      expect(described_class.public_send(method)).to have_attributes(
-        file_system: be_a(TRMNL::Liquid::MemorySystem),
-        error_mode: :lax,
-        tags: hash_including("template" => TRMNL::Liquid::TemplateTag)
-      )
-    end
-
-    it "applies custom error mode" do
-      environment = described_class.public_send method, error_mode: :strict
-      expect(environment.error_mode).to eq(:strict)
-    end
-
-    it "applies custom file system" do
-      file_system = Class.new
-      environment = described_class.public_send(method, file_system:)
-
-      expect(environment.file_system).to eq(file_system)
-    end
-
-    it "yields to block" do
-      capture = described_class.public_send(method) { capture = it }
-      expect(capture).to be_a(Liquid::Environment)
-    end
-  end
-
-  describe ".build_environment" do
-    it_behaves_like "an initializer", :build_environment
-
-    it "prints deprecation warning" do
-      expectation = proc { described_class.build_environment }
-      message = "`Module#build_environment` is deprecated, use `new` instead.\n"
-
-      expect(&expectation).to output(message).to_stderr
-    end
-  end
-
   describe ".load" do
     it "loads TRMNL i18n gem locales" do
       expect(described_class.load(:rails)).to include(%r(trmnl/i18n/locales))
@@ -62,6 +24,29 @@ RSpec.describe TRMNL::Liquid do
   end
 
   describe ".new" do
-    it_behaves_like "an initializer", :new
+    it "builds with defaults" do
+      expect(described_class.new).to have_attributes(
+        file_system: be_a(TRMNL::Liquid::MemorySystem),
+        error_mode: :lax,
+        tags: hash_including("template" => TRMNL::Liquid::TemplateTag)
+      )
+    end
+
+    it "applies custom error mode" do
+      environment = described_class.new error_mode: :strict
+      expect(environment.error_mode).to eq(:strict)
+    end
+
+    it "applies custom file system" do
+      file_system = Class.new
+      environment = described_class.new(file_system:)
+
+      expect(environment.file_system).to eq(file_system)
+    end
+
+    it "yields to block" do
+      capture = described_class.new { capture = it }
+      expect(capture).to be_a(Liquid::Environment)
+    end
   end
 end
