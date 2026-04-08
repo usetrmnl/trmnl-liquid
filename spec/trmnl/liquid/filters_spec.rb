@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "rexml/document"
 require "spec_helper"
 
 RSpec.describe TRMNL::Liquid::Filters do
@@ -336,19 +337,70 @@ RSpec.describe TRMNL::Liquid::Filters do
   end
 
   describe "#qr_code" do
+    let(:template) { +"" }
+
+    let :expectation do
+      content = renderer.call template, {}
+      element = REXML::Document.new(content).root
+
+      element.attributes.each.with_object({}) { |(key, value), all| all[key] = value }
+    end
+
     it "answers SVG with defaults" do
-      content = renderer.call %({{ "Test" | qr_code }}), {}
-      expect(content).to match(%r(\A<\?xml.+class="qr-code".+</svg>\Z))
+      template.replace %({{ "Test" | qr_code }})
+
+      expect(expectation).to eq(
+        "version" => "1.1",
+        "xmlns" => "http://www.w3.org/2000/svg",
+        "xmlns:xlink" => "http://www.w3.org/1999/xlink",
+        "xmlns:ev" => "http://www.w3.org/2001/xml-events",
+        "shape-rendering" => "crispEdges",
+        "class" => "qr-code",
+        "viewBox" => "0 0 231 231"
+      )
     end
 
     it "answers SVG for size and 7% level" do
-      content = renderer.call %({{ "Test" | qr_code: 11, "l" }}), {}
-      expect(content).to match(%r(\A<\?xml.+class="qr-code".+</svg>\Z))
+      template.replace %({{ "Test" | qr_code: 11, "l" }})
+
+      expect(expectation).to eq(
+        "version" => "1.1",
+        "xmlns" => "http://www.w3.org/2000/svg",
+        "xmlns:xlink" => "http://www.w3.org/1999/xlink",
+        "xmlns:ev" => "http://www.w3.org/2001/xml-events",
+        "shape-rendering" => "crispEdges",
+        "class" => "qr-code",
+        "viewBox" => "0 0 231 231"
+      )
     end
 
     it "answers SVG for size and invalid level" do
-      content = renderer.call %({{ "Test" | qr_code: 11, "BOGUS" }}), {}
-      expect(content).to match(%r(\A<\?xml.+class="qr-code".+</svg>\Z))
+      template.replace %({{ "Test" | qr_code: 11, "BOGUS" }})
+
+      expect(expectation).to eq(
+        "version" => "1.1",
+        "xmlns" => "http://www.w3.org/2000/svg",
+        "xmlns:xlink" => "http://www.w3.org/1999/xlink",
+        "xmlns:ev" => "http://www.w3.org/2001/xml-events",
+        "shape-rendering" => "crispEdges",
+        "class" => "qr-code",
+        "viewBox" => "0 0 231 231"
+      )
+    end
+
+    it "answers SVG with width and height when view box is fixed (disabled)" do
+      template.replace %({{ "Test" | qr_code, 11, "", fixed }})
+
+      expect(expectation).to eq(
+        "version" => "1.1",
+        "xmlns" => "http://www.w3.org/2000/svg",
+        "xmlns:xlink" => "http://www.w3.org/1999/xlink",
+        "xmlns:ev" => "http://www.w3.org/2001/xml-events",
+        "shape-rendering" => "crispEdges",
+        "class" => "qr-code",
+        "height" => "231",
+        "width" => "231"
+      )
     end
   end
 end

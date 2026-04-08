@@ -120,8 +120,9 @@ module TRMNL
         time.strftime strftime_format.gsub("<<ordinal_day>>", ordinal_day)
       end
 
+      # rubocop:todo Metrics/ParameterLists
       # rubocop:todo Metrics/MethodLength
-      def qr_code data, size = 11, level = ""
+      def qr_code data, size = 11, level = "", view = "responsive"
         level = "h" unless %w[l m q h].include? level.downcase
 
         qrcode = RQRCode::QRCode.new(data, level:)
@@ -130,13 +131,14 @@ module TRMNL
           fill: "fff",
           shape_rendering: "crispEdges",
           module_size: size,
-          standalone: true,
           use_path: true,
+          viewbox: view == "responsive",
           svg_attributes: {
             class: "qr-code"
           }
         )
       end
+      # rubocop:enable Metrics/ParameterLists
       # rubocop:enable Metrics/MethodLength
 
       private
