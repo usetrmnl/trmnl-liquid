@@ -282,6 +282,64 @@ RSpec.describe TRMNL::Liquid::Filters do
     end
   end
 
+  describe "#descriptive_stats" do
+    it "answers mean and stdev for uniform values" do
+      content = renderer.call(
+        %({% assign stats = values | descriptive_stats %}{{ stats.mean }},{{ stats.stdev }}),
+        {"values" => [5.0, 5.0, 5.0, 5.0]}
+      )
+      expect(content).to eq("5.0,0.0")
+    end
+
+    it "answers mean and stdev for integer values" do
+      content = renderer.call(
+        %({% assign stats = values | descriptive_stats %}{{ stats.mean }},{{ stats.stdev }}),
+        {"values" => [2, 4, 4, 4, 5, 5, 7, 9]}
+      )
+      expect(content).to eq("5.0,2.0")
+    end
+
+    it "answers mean for float values" do
+      content = renderer.call(
+        %({% assign stats = values | descriptive_stats %}{{ stats.mean }}),
+        {"values" => [0.317, 0.316, 0.316, 0.315, 0.317]}
+      )
+      expect(content).to eq("0.3162")
+    end
+
+    it "answers zero mean and stdev for empty collection" do
+      content = renderer.call(
+        %({% assign stats = values | descriptive_stats %}{{ stats.mean }},{{ stats.stdev }}),
+        {"values" => []}
+      )
+      expect(content).to eq("0.0,0.0")
+    end
+
+    it "answers zero stdev for single value" do
+      content = renderer.call(
+        %({% assign stats = values | descriptive_stats %}{{ stats.stdev }}),
+        {"values" => [42.0]}
+      )
+      expect(content).to eq("0.0")
+    end
+
+    it "answers correct mean for negative values" do
+      content = renderer.call(
+        %({% assign stats = values | descriptive_stats %}{{ stats.mean }}),
+        {"values" => [-3.0, -1.0, 1.0, 3.0]}
+      )
+      expect(content).to eq("0.0")
+    end
+
+    it "answers correct stdev for negative values" do
+      content = renderer.call(
+        %({% assign stats = values | descriptive_stats %}{{ stats.stdev }}),
+        {"values" => [-3.0, -1.0, 1.0, 3.0]}
+      )
+      expect(content).to eq("2.0")
+    end
+  end
+
   describe "#where_exp" do
     it "answers orignal template when expression isn't applicable" do
       content = renderer.call %({{ "test" | where_exp: "la", "le" }}), {}

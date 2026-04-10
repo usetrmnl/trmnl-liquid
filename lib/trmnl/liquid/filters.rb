@@ -95,6 +95,16 @@ module TRMNL
 
       def sample(array) = array.sample
 
+      def descriptive_stats collection
+        values = collection.map { |v| v.to_f }
+        return {"mean" => 0.0, "stdev" => 0.0} if values.empty?
+
+        mean = values.sum / values.size
+        variance = values.sum { |v| (v - mean) ** 2 } / values.size
+
+        {"mean" => mean, "stdev" => Math.sqrt(variance)}
+      end
+
       # :reek:TooManyStatements
       # source: https://github.com/jekyll/jekyll/blob/40ac06ed3e95325a07868dd2ac419e409af823b6/lib/jekyll/filters.rb#L209
       def where_exp input, variable, expression
