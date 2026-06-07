@@ -13,7 +13,7 @@ gem "trmnl-i18n", github: "usetrmnl/trmnl-i18n", branch: "main"
 
 group :quality do
   gem "caliber", "~> 0.88"
-  gem "git-lint", "~> 10.0"
+  gem "git-lint", "~> 11.0"
   gem "reek", "~> 6.5", require: false
   gem "simplecov", "~> 0.22", require: false
 end
