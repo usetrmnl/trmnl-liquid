@@ -3,12 +3,16 @@
 require "simplecov"
 
 unless ENV["COVERAGE"] == "no"
-  SimpleCov.start do
-    add_filter %r(^/spec/)
-    enable_coverage :branch
-    enable_coverage_for_eval
-    minimum_coverage_by_file line: 95, branch: 69
+  SimpleCov.start :strict do
+    minimum_coverage branch: 70
   end
+end
+
+# TODO: Remove once the Liquid gem is fixed because it violates Object#inspect behavior.
+SimpleCov.at_exit do
+  SimpleCov.result.format!
+rescue ArgumentError => error
+  warn "Liquid object inspection failure: #{error.message}"
 end
 
 Bundler.require :tools
