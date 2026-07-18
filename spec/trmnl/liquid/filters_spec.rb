@@ -57,8 +57,8 @@ RSpec.describe TRMNL::Liquid::Filters do
                               }
 
       expect(content).to eq(
-        %({35=>[{"name"=>"Ryan", "age"=>35}], 29=>[{"name"=>"Sara", "age"=>29}, ) +
-        %({"name"=>"Jimbob", "age"=>29}]})
+        %({35 => [{"name" => "Ryan", "age" => 35}], 29 => [{"name" => "Sara", "age" => 29}, ) +
+        %({"name" => "Jimbob", "age" => 29}]})
       )
     end
   end
@@ -84,7 +84,7 @@ RSpec.describe TRMNL::Liquid::Filters do
     it "finds by name" do
       content = renderer.call "{{ collection | find_by: 'name', 'Ryan' }}",
                               {"collection" => collection}
-      expect(content).to eq('{"name"=>"Ryan", "age"=>35}')
+      expect(content).to eq('{"name" => "Ryan", "age" => 35}')
     end
 
     it "answers fallback when not found" do
@@ -293,7 +293,7 @@ RSpec.describe TRMNL::Liquid::Filters do
       data = {"towns" => [{"id" => 1, "label" => "Boulder"}, {"id" => 2, "label" => "Bozeman"}]}
       content = renderer.call template, data
 
-      expect(content.strip).to eq(%({"id"=>1, "label"=>"Boulder"}))
+      expect(content.strip).to eq(%({"id" => 1, "label" => "Boulder"}))
     end
 
     it "answers content which matches equation" do

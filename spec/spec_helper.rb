@@ -8,13 +8,6 @@ unless ENV["COVERAGE"] == "no"
   end
 end
 
-# TODO: Remove once the Liquid gem is fixed because it violates Object#inspect behavior.
-SimpleCov.at_exit do
-  SimpleCov.result.format!
-rescue ArgumentError => error
-  warn "Liquid object inspection failure: #{error.message}"
-end
-
 Bundler.require :tools
 
 require "refinements"

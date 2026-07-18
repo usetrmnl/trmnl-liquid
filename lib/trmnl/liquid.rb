@@ -5,6 +5,16 @@ require "trmnl/liquid/filters"
 require "trmnl/liquid/memory_system"
 require "trmnl/liquid/template_tag"
 
+# rubocop:todo Style/OneClassPerFile
+module Liquid
+  # TODO: Remove once Liquid is patched. Broken since Liquid 5.13.0. Issue: 2107.
+  module Utils
+    def self.inspect(object = nil, seen = {}) = seen.empty? ? object.to_s : super
+
+    def self.to_s(object = nil, seen = {}) = seen.empty? ? object.to_s : super
+  end
+end
+
 module TRMNL
   # Main namespace.
   module Liquid
@@ -32,3 +42,4 @@ module TRMNL
     end
   end
 end
+# rubocop:enable Style/OneClassPerFile
