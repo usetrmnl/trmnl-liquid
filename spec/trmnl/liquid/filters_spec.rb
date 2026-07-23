@@ -356,7 +356,10 @@ RSpec.describe TRMNL::Liquid::Filters do
         "xmlns:ev" => "http://www.w3.org/2001/xml-events",
         "shape-rendering" => "crispEdges",
         "class" => "qr-code",
-        "viewBox" => "0 0 231 231"
+        "viewBox" => "0 0 231 231",
+        "width" => "231",
+        "height" => "231",
+        "style" => "max-width:100%;height:auto"
       )
     end
 
@@ -370,7 +373,10 @@ RSpec.describe TRMNL::Liquid::Filters do
         "xmlns:ev" => "http://www.w3.org/2001/xml-events",
         "shape-rendering" => "crispEdges",
         "class" => "qr-code",
-        "viewBox" => "0 0 231 231"
+        "viewBox" => "0 0 231 231",
+        "width" => "231",
+        "height" => "231",
+        "style" => "max-width:100%;height:auto"
       )
     end
 
@@ -384,12 +390,15 @@ RSpec.describe TRMNL::Liquid::Filters do
         "xmlns:ev" => "http://www.w3.org/2001/xml-events",
         "shape-rendering" => "crispEdges",
         "class" => "qr-code",
-        "viewBox" => "0 0 231 231"
+        "viewBox" => "0 0 231 231",
+        "width" => "231",
+        "height" => "231",
+        "style" => "max-width:100%;height:auto"
       )
     end
 
     it "answers SVG with width and height when view box is fixed (disabled)" do
-      template.replace %({{ "Test" | qr_code, 11, "", fixed }})
+      template.replace %({{ "Test" | qr_code: 11, "", "fixed" }})
 
       expect(expectation).to eq(
         "version" => "1.1",

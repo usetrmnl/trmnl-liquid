@@ -126,22 +126,29 @@ module TRMNL
         level = "h" unless %w[l m q h].include? level.downcase
 
         qrcode = RQRCode::QRCode.new(data, level:)
+        responsive = view == "responsive"
+
         qrcode.as_svg(
           color: "000",
           fill: "fff",
           shape_rendering: "crispEdges",
           module_size: size,
           use_path: true,
-          viewbox: view == "responsive",
-          svg_attributes: {
-            class: "qr-code"
-          }
+          viewbox: responsive,
+          svg_attributes: {class: "qr-code", **(responsive ? intrinsic_size(qrcode, size) : {})}
         )
       end
       # rubocop:enable Metrics/ParameterLists
       # rubocop:enable Metrics/MethodLength
 
       private
+
+      # RQRCode swaps width and height for a view box, leaving the element with no size of its own
+      def intrinsic_size qrcode, size
+        length = qrcode.qrcode.module_count * size
+
+        {width: length, height: length, style: "max-width:100%;height:auto"}
+      end
 
       def with_i18n fallback
         if defined?(::I18n)
