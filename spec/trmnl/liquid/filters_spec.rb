@@ -389,7 +389,7 @@ RSpec.describe TRMNL::Liquid::Filters do
     end
 
     it "answers SVG with width and height when view box is fixed (disabled)" do
-      template.replace %({{ "Test" | qr_code, 11, "", fixed }})
+      template.replace %({{ "Test" | qr_code, 11, "", "fixed" }})
 
       expect(expectation).to eq(
         "version" => "1.1",
