@@ -271,12 +271,12 @@ RSpec.describe TRMNL::Liquid::Filters do
   end
 
   describe "#sample" do
-    it "asnwers random number" do
+    it "answers random number" do
       content = renderer.call %({{ data | split: "," | sample }}), {"data" => "1,2,3,4,5"}
       expect(content).to match(/\A(1|2|3|4|5)\Z/)
     end
 
-    it "asnwers random word" do
+    it "answers random word" do
       content = renderer.call %({{ data | split: "," | sample }}), {"data" => "one,two,three"}
       expect(content).to match(/\A(one|two|three)\Z/)
     end
@@ -380,12 +380,12 @@ RSpec.describe TRMNL::Liquid::Filters do
       expect(content).to eq("Tuesday, February 3rd, 2026")
     end
 
-    it "asnwers day (long), month, day (short), and year" do
+    it "answers day (long), month, day (short), and year" do
       content = renderer.call %({{ "2025-10-02" | ordinalize: "%A, %B <<ordinal_day>>, %Y" }}), {}
       expect(content).to eq("Thursday, October 2nd, 2025")
     end
 
-    it "asnwers day (long), month, and data (short)" do
+    it "answers day (long), month, and data (short)" do
       template = %({{ "2025-12-31 16:50:38 -0400" | ordinalize: "%A, %b <<ordinal_day>>" }})
       content = renderer.call template, {}
 
