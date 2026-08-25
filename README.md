@@ -113,7 +113,7 @@ To publish, run the following:
 
 ``` ruby
 # Step 0: You only need to do this once.
-bundle install gemsmith
+gem install gemsmith
 
 # Step 1: Edit the version number in trmnl-liquid.gemspec and update it to your desired version.
 
