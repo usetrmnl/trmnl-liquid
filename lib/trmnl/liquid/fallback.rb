@@ -7,7 +7,7 @@ module TRMNL
       module_function
 
       # :reek:TooManyStatements
-      # rubocop:todo Metrics/MethodLength
+      # rubocop:todo-next Metrics/MethodLength
       def number_with_delimiter number, delimiter, separator
         value = number.to_s
 
@@ -27,9 +27,8 @@ module TRMNL
           integer_with_delimiters
         end
       end
-      # rubocop:enable Metrics/MethodLength
 
-      # rubocop:disable Metrics/ParameterLists
+      # rubocop:disable-next Metrics/ParameterLists
       def number_to_currency number, unit, delimiter, separator, precision
         result = number_with_delimiter number, delimiter, separator
         dollars, cents = result.split separator
@@ -41,7 +40,6 @@ module TRMNL
           "#{unit}#{dollars}#{separator}#{cents}"
         end
       end
-      # rubocop:enable Metrics/ParameterLists
 
       # :reek:TooManyStatements
       def ordinalize number

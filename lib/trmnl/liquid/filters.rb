@@ -10,7 +10,7 @@ require_relative "fallback"
 
 module TRMNL
   module Liquid
-    # rubocop:todo Metrics/ModuleLength
+    # rubocop:todo-next Metrics/ModuleLength
     module Filters
       def append_random(value) = "#{value}#{SecureRandom.hex 2}"
 
@@ -21,11 +21,10 @@ module TRMNL
       def group_by(collection, key) = collection.group_by { it[key] }
 
       # :reek:ControlParameter
-      # rubocop:todo Metrics/ParameterLists
+      # rubocop:todo-next Metrics/ParameterLists
       def find_by collection, key, value, fallback = nil
         collection.find { |obj| obj[key] == value } || fallback
       end
-      # rubocop:enable Metrics/ParameterLists
 
       def markdown_to_html markdown
         markdown ||= ""
@@ -43,7 +42,7 @@ module TRMNL
       end
 
       # :reek:TooManyStatements
-      # rubocop:todo Metrics/ParameterLists
+      # rubocop:todo-next Metrics/ParameterLists
       def number_to_currency number,
                              unit_or_locale = "$",
                              delimiter = ",",
@@ -59,7 +58,6 @@ module TRMNL
           Fallback.number_to_currency number, unit_or_locale, delimiter, separator, precision
         end
       end
-      # rubocop:enable Metrics/ParameterLists
 
       def l_word word, locale
         with_i18n("custom_plugins.#{word}") { |i18n| i18n.t "custom_plugins.#{word}", locale: }
@@ -76,7 +74,7 @@ module TRMNL
       def map_to_i(collection) = collection.map(&:to_i)
 
       # :reek:FeatureEnvy
-      # rubocop:todo Style/OptionHash
+      # rubocop:todo-next Style/OptionHash
       def pluralize singular, count, options = {}
         plural = options["plural"]
         locale = options["locale"] || with_i18n(nil, &:locale) || "en"
@@ -87,7 +85,6 @@ module TRMNL
           Fallback.pluralize count, singular, plural
         end
       end
-      # rubocop:enable Style/OptionHash
 
       def json(value) = JSON.generate value
 
@@ -213,6 +210,5 @@ module TRMNL
         ::Liquid::Condition.new left_operand, operator, ::Liquid::Expression.parse(parser.expression)
       end
     end
-    # rubocop:enable Metrics/ModuleLength
   end
 end
