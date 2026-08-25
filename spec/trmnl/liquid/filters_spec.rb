@@ -282,6 +282,63 @@ RSpec.describe TRMNL::Liquid::Filters do
     end
   end
 
+  describe "#random_number" do
+    it "answers number within default bounds when no bounds are given" do
+      allow(SecureRandom).to receive(:random_number).with(101).and_return(100)
+      content = renderer.call %({{ "" | random_number }}), {}
+
+      expect(content).to eq("100")
+    end
+
+    it "answers number within given bounds" do
+      content = renderer.call %({{ "" | random_number: 1, 6 }}), {}
+      expect(content).to match(/\A(1|2|3|4|5|6)\Z/)
+    end
+
+    it "treats single bound as maximum" do
+      allow(SecureRandom).to receive(:random_number).with(7).and_return(6)
+      content = renderer.call %({{ "" | random_number: 6 }}), {}
+
+      expect(content).to eq("6")
+    end
+
+    it "includes both bounds" do
+      allow(SecureRandom).to receive(:random_number).with(6).and_return(0, 5)
+      content = renderer.call %({{ "" | random_number: 1, 6 }}{{ "" | random_number: 1, 6 }}), {}
+
+      expect(content).to eq("16")
+    end
+
+    it "answers number within bounds when bounds are reversed" do
+      content = renderer.call %({{ "" | random_number: 6, 1 }}), {}
+      expect(content).to match(/\A(1|2|3|4|5|6)\Z/)
+    end
+
+    it "answers minimum when bounds are equal" do
+      content = renderer.call %({{ "" | random_number: 3, 3 }}), {}
+      expect(content).to eq("3")
+    end
+
+    it "casts string bounds" do
+      content = renderer.call %({{ "" | random_number: min, max }}), {"min" => "1", "max" => "6"}
+      expect(content).to match(/\A(1|2|3|4|5|6)\Z/)
+    end
+
+    it "ignores piped value" do
+      allow(SecureRandom).to receive(:random_number).with(6).and_return(2)
+      content = renderer.call %({{ 99 | random_number: 1, 6 }}{{ nil | random_number: 1, 6 }}), {}
+
+      expect(content).to eq("33")
+    end
+
+    it "answers integer which can be used for arithmetic and comparison" do
+      template = %({% assign number = nil | random_number: 5, 5 %}{{ number | plus: 1 }})
+      content = renderer.call template, {}
+
+      expect(content).to eq("6")
+    end
+  end
+
   describe "#where_exp" do
     it "answers orignal template when expression isn't applicable" do
       content = renderer.call %({{ "test" | where_exp: "la", "le" }}), {}

@@ -93,6 +93,13 @@ module TRMNL
 
       def parse_json(value) = JSON.parse value
 
+      # :reek:UtilityFunction
+      def random_number _value, min = nil, max = nil
+        lower, upper = random_bounds min, max
+
+        lower + SecureRandom.random_number(upper - lower + 1)
+      end
+
       def sample(array) = array.sample
 
       # :reek:TooManyStatements
@@ -142,6 +149,17 @@ module TRMNL
       # rubocop:enable Metrics/MethodLength
 
       private
+
+      # Answers inclusive [minimum, maximum] bounds, defaulting and reordering as necessary.
+      # :reek:UtilityFunction
+      def random_bounds min, max
+        return [0, 100] unless min
+
+        lower = min.to_i
+        return [0, lower] unless max
+
+        [lower, max.to_i].minmax
+      end
 
       def with_i18n fallback
         if defined?(::I18n)
