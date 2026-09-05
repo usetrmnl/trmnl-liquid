@@ -59,7 +59,9 @@ module TRMNL
         end
       end
 
+      # Only this filter reaches the custom_plugins locales, so subscribers see every word in use.
       def l_word word, locale
+        notify_word word
         with_i18n("custom_plugins.#{word}") { |i18n| i18n.t "custom_plugins.#{word}", locale: }
       end
 
@@ -156,6 +158,12 @@ module TRMNL
         return [0, lower] unless max
 
         [lower, max.to_i].minmax
+      end
+
+      def notify_word word
+        return unless defined?(::ActiveSupport::Notifications)
+
+        ::ActiveSupport::Notifications.instrument "l_word.trmnl_liquid", word:
       end
 
       def with_i18n fallback

@@ -169,6 +169,19 @@ RSpec.describe TRMNL::Liquid::Filters do
       content = renderer.call %({{ "tomorrow" | l_word: "ko" }}), {}
       expect(content).to eq("내일")
     end
+
+    context "when a notifier is loaded" do
+      let(:notifications) { double instrument: nil }
+
+      before { stub_const "ActiveSupport::Notifications", notifications }
+
+      it "publishes the word it was asked for" do
+        renderer.call %({{ "today" | l_word: "es-ES" }}), {}
+
+        expect(notifications).to have_received(:instrument)
+          .with("l_word.trmnl_liquid", word: "today")
+      end
+    end
   end
 
   describe "#l_date" do
