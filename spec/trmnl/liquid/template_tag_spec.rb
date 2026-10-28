@@ -29,6 +29,28 @@ RSpec.describe TRMNL::Liquid::TemplateTag do
       expect(content).to eq("abc  123")
     end
 
+    ["{%endtemplate%}", "{%  endtemplate  %}", "{%\nendtemplate\n%}", "{%- endtemplate -%}"]
+      .each do |end_tag|
+        it "answers content when end tag is #{end_tag.inspect}" do
+          template = "{% template my_template %}Hello#{end_tag}{% render 'my_template' %}!"
+          content = renderer.call template, {}
+
+          expect(content).to eq("Hello!")
+        end
+      end
+
+    it "answers content with whitespace after end tag trimmed" do
+      template = "{% template my_template %}Hi{% endtemplate -%}\n  {% render 'my_template' %}"
+      content = renderer.call template, {}
+
+      expect(content).to eq("Hi")
+    end
+
+    it "fails when end tag is missing" do
+      expectation = proc { renderer.call "{% template my_template %}Hello", {} }
+      expect(&expectation).to raise_error(Liquid::SyntaxError, /'template' tag was never closed/)
+    end
+
     it "answers error with invalid template name" do
       content = renderer.call "{% template Danger! %}Hello, world!{% endtemplate %}", {}
 
