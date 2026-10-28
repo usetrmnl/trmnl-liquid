@@ -20,10 +20,12 @@ module TRMNL
         body.clear
 
         while (token = tokens.shift)
-          break if token.strip == "{% endtemplate %}"
+          return close token if end_tag? token
 
           body << token
         end
+
+        raise_tag_never_closed block_name
       end
 
       def render context
@@ -39,6 +41,10 @@ module TRMNL
       private
 
       attr_reader :name, :body
+
+      def end_tag?(token) = token[::Liquid::BlockBody::FullToken, 2] == block_delimiter
+
+      def close(token) = parse_context.trim_whitespace = token.end_with?("-%}")
     end
   end
 end
