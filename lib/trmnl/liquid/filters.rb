@@ -99,6 +99,9 @@ module TRMNL
         lower + SecureRandom.random_number(upper - lower + 1)
       end
 
+      # source: https://github.com/jekyll/jekyll/blob/40ac06ed3e95325a07868dd2ac419e409af823b6/lib/jekyll/filters.rb#L330
+      def push(array, item) = array.is_a?(Array) ? array.dup.push(item) : array
+
       def sample(array) = array.sample
 
       # :reek:TooManyStatements

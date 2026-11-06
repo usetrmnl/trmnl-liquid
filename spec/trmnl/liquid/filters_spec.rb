@@ -283,6 +283,51 @@ RSpec.describe TRMNL::Liquid::Filters do
     end
   end
 
+  describe "#push" do
+    it "appends item to end of array" do
+      content = renderer.call %({{ data | split: "," | push: "c" | join: "," }}), {"data" => "a,b"}
+      expect(content).to eq("a,b,c")
+    end
+
+    it "builds array within loop" do
+      template = <<~LIQUID.strip
+        {% assign names = "" | split: "" %}
+        {%- for person in people -%}
+          {%- assign names = names | push: person.name -%}
+        {%- endfor -%}
+        {{ names | join: "," }}
+      LIQUID
+
+      content = renderer.call template, {"people" => [{"name" => "Ryan"}, {"name" => "Sara"}]}
+
+      expect(content).to eq("Ryan,Sara")
+    end
+
+    it "appends object" do
+      content = renderer.call %({{ people | push: person | map: "name" | join: "," }}),
+                              {"people" => [{"name" => "Ryan"}], "person" => {"name" => "Sara"}}
+
+      expect(content).to eq("Ryan,Sara")
+    end
+
+    it "leaves original array unchanged" do
+      content = renderer.call %({% assign more = letters | push: "c" %}{{ letters | join: "," }}),
+                              {"letters" => %w[a b]}
+
+      expect(content).to eq("a,b")
+    end
+
+    it "answers string unchanged" do
+      content = renderer.call %({{ "text" | push: "c" }}), {}
+      expect(content).to eq("text")
+    end
+
+    it "answers empty string when array is undefined" do
+      content = renderer.call %({{ missing | push: "c" }}), {}
+      expect(content).to eq("")
+    end
+  end
+
   describe "#sample" do
     it "answers random number" do
       content = renderer.call %({{ data | split: "," | sample }}), {"data" => "1,2,3,4,5"}
