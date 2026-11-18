@@ -214,6 +214,16 @@ RSpec.describe TRMNL::Liquid::Filters do
       content = renderer.call %({{ "2025-01-11" | l_date: "%y %b", "ko" }}), {}
       expect(content).to eq("25 1월")
     end
+
+    it "answers nothing for a missing value" do
+      content = renderer.call %({{ missing | l_date: "%Y" }}), {}
+      expect(content).to eq("")
+    end
+
+    it "answers nothing for an empty value" do
+      content = renderer.call %({{ "" | l_date: "%Y" }}), {}
+      expect(content).to eq("")
+    end
   end
 
   describe "#map_to_i" do

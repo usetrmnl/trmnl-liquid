@@ -67,7 +67,10 @@ module TRMNL
 
       # :reek:FeatureEnvy
       def l_date value, format, locale = "en"
-        with_i18n value.to_s do |i18n|
+        text = value.to_s
+        return value if text.empty?
+
+        with_i18n text do |i18n|
           format = format.to_sym unless format.include? "%"
           i18n.l to_time(value), format:, locale:
         end
